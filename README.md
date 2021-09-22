@@ -30,13 +30,10 @@
 
 Para versão 2.0 à 2.2 do Opencart utilize os arquivos da pasta 2.x.
 
-1. Acesse Extensões > Instalador
-2. Faça o upload do arquivo OCMOD
-3. Acesse Extensões > Modificações
-4. Clique no botão atualizar
-5. Acesse extensões pagamentos
-6. Instale e configure
-7. Pronto! O módulo está funcionando
+1. Faça o upload do arquivo ZIP da raiz do seu servidor
+2. Acesse extensões pagamentos
+3. Instale e configure
+4. Pronto! O módulo está funcionando
 
 ## Campos Customizáveis
 
