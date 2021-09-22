@@ -187,7 +187,13 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 					$json['redirect'] = $this->url->link('checkout/success');
 			}
 		} else {
-			$json['error'] = implode("\n", array_map(function($error){ return $error->message; }, json_decode($res['httpMsg'])->errors));
+			$message = json_decode($res['httpMsg']);
+			if($message && isset($message->errors) && is_array($message->errors) && count($message->errors)) {
+				$json['error'] = implode("\n", array_map(function($error){ return $error->message; }, $message->errors));
+			}
+			else {
+				$json['error'] = 'Houve uma falha ao finalizar a campo. Tente novamente.';
+			}
 		}
 		// $json = get_defined_vars();
 		$this->response->addHeader('Content-Type: application/json');
