@@ -1,0 +1,203 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-payment" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a></div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_edit }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-payment" class="form-horizontal">
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-total"><span data-toggle="tooltip" title="{{ help_total }}">{{ entry_total }}</span></label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_aditum_billet_total" value="{{ payment_aditum_billet_total }}" placeholder="{{ entry_total }}" id="input-total" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-order-aditum_billet_modo">{{ aditum_billet_modo }}</label>
+            <div class="col-sm-10">
+              <select name="payment_aditum_billet_modo" id="input-order-aditum_billet_modo" class="form-control">
+                <option value="sandbox" selected="selected">Sandbox</option>
+                <option {% if payment_aditum_billet_modo == 'production' %}selected{% endif %}value="production">Produção</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_titulo_gateway"><span data-toggle="tooltip" title="{{ help_aditum_billet_titulo_gateway }}">{{ aditum_billet_titulo_gateway }}</span></label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_aditum_billet_titulo_gateway" value="{{ payment_aditum_billet_titulo_gateway }}" placeholder="{{ entry_aditum_billet_titulo_gateway }}" id="input-aditum_billet_titulo_gateway" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_descricao_gateway"><span data-toggle="tooltip" title="{{ help_aditum_billet_descricao_gateway }}">{{ aditum_billet_descricao_gateway }}</span></label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_aditum_billet_descricao_gateway" value="{{ payment_aditum_billet_descricao_gateway }}" placeholder="{{ entry_aditum_billet_descricao_gateway }}" id="input-aditum_billet_descricao_gateway" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_instrucoes"><span data-toggle="tooltip" title="{{ help_aditum_billet_instrucoes }}">{{ aditum_billet_instrucoes }}</span></label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_aditum_billet_instrucoes" value="{{ payment_aditum_billet_instrucoes }}" placeholder="{{ entry_aditum_billet_instrucoes }}" id="input-aditum_billet_instrucoes" class="form-control" />
+            </div>
+          </div>
+
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_expiracao"><span data-toggle="tooltip" title="{{ help_aditum_billet_expiracao }}">{{ aditum_billet_expiracao }}</span></label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_aditum_billet_expiracao" value="{{ payment_aditum_billet_expiracao }}" placeholder="{{ entry_aditum_billet_expiracao }}" id="input-aditum_billet_expiracao" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_dias_multa"><span data-toggle="tooltip" title="{{ help_aditum_billet_dias_multa }}">{{ aditum_billet_dias_multa }}</span></label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_aditum_billet_dias_multa" value="{{ payment_aditum_billet_dias_multa }}" placeholder="{{ entry_aditum_billet_dias_multa }}" id="input-aditum_billet_dias_multa" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_valor_multa"><span data-toggle="tooltip" title="{{ help_aditum_billet_valor_multa }}">{{ aditum_billet_valor_multa }}</span></label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_aditum_billet_valor_multa" value="{{ payment_aditum_billet_valor_multa }}" placeholder="{{ entry_aditum_billet_valor_multa }}" id="input-aditum_billet_valor_multa" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_percentual_multa"><span data-toggle="tooltip" title="{{ help_aditum_billet_percentual_multa }}">{{ aditum_billet_percentual_multa }}</span></label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_aditum_billet_percentual_multa" value="{{ payment_aditum_billet_percentual_multa }}" placeholder="{{ entry_aditum_billet_percentual_multa }}" id="input-aditum_billet_percentual_multa" class="form-control" />
+            </div>
+          </div>
+
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_cnpj"><span data-toggle="tooltip" title="{{ help_aditum_billet_cnpj }}">{{ aditum_billet_cnpj }}</span></label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_aditum_billet_cnpj" value="{{ payment_aditum_billet_cnpj }}" placeholder="{{ entry_aditum_billet_cnpj }}" id="input-aditum_billet_cnpj" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_merchant_token"><span data-toggle="tooltip" title="{{ help_aditum_billet_merchant_token }}">{{ aditum_billet_merchant_token }}</span></label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_aditum_billet_merchant_token" value="{{ payment_aditum_billet_merchant_token }}" placeholder="{{ entry_aditum_billet_merchant_token }}" id="input-aditum_billet_merchant_token" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_campo_documento"><span data-toggle="tooltip" title="{{ help_aditum_billet_campo_documento }}">{{ aditum_billet_campo_documento }}</span></label>
+            <div class="col-sm-10">
+              <select name="payment_aditum_billet_campo_documento" id="input-aditum_billet_campo_documento" class="form-control">
+                <option value="">Selecione o campo</option>
+                {% for field in custom_fields %}
+                <option {% if payment_aditum_billet_campo_documento == field.custom_field_id %}selected{% endif %} value="{{ field.custom_field_id }}">{{ field.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_campo_numero"><span data-toggle="tooltip" title="{{ help_aditum_billet_campo_numero }}">{{ aditum_billet_campo_numero }}</span></label>
+            <div class="col-sm-10">
+              <select name="payment_aditum_billet_campo_numero" id="input-aditum_billet_campo_numero" class="form-control">
+                <option value="">Selecione o campo</option>
+                {% for field in custom_fields %}
+                <option {% if payment_aditum_billet_campo_numero == field.custom_field_id %}selected{% endif %} value="{{ field.custom_field_id }}">{{ field.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_campo_complemento"><span data-toggle="tooltip" title="{{ help_aditum_billet_campo_complemento }}">{{ aditum_billet_campo_complemento }}</span></label>
+            <div class="col-sm-10">
+              <select name="payment_aditum_billet_campo_complemento" id="input-aditum_billet_campo_complemento" class="form-control">
+                <option value="">Selecione o campo</option>
+                {% for field in custom_fields %}
+                <option {% if payment_aditum_billet_campo_complemento == field.custom_field_id %}selected{% endif %} value="{{ field.custom_field_id }}">{{ field.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_tipo_antifraude"><span data-toggle="tooltip" title="{{ help_aditum_billet_tipo_antifraude }}">{{ aditum_billet_tipo_antifraude }}</span></label>
+            <div class="col-sm-10">
+              <select name="payment_aditum_billet_tipo_antifraude" value="{{ payment_aditum_billet_tipo_antifraude }}" id="input-aditum_billet_tipo_antifraude" class="form-control">
+                <option value="clearsale">Clear Sale</option>
+                <option value="konduto" {% if payment_aditum_billet_tipo_antifraude == 'konduto' %}checked{% endif %}>Konduto</option>
+                </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_token_antifraude"><span data-toggle="tooltip" title="{{ help_aditum_billet_token_antifraude }}">{{ aditum_billet_token_antifraude }}</span></label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_aditum_billet_token_antifraude" value="{{ payment_aditum_billet_token_antifraude }}" placeholder="{{ entry_aditum_billet_token_antifraude }}" id="input-aditum_billet_token_antifraude" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-order-status">{{ entry_order_status }}</label>
+            <div class="col-sm-10">
+              <select name="payment_aditum_billet_order_status_id" id="input-order-status" class="form-control">
+                {% for order_status in order_statuses %}
+                {% if order_status.order_status_id == payment_aditum_billet_order_status_id %}
+                <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                {% else %}
+                <option value="{{ order_status.order_status_id }}">{{ order_status.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-geo-zone">{{ entry_geo_zone }}</label>
+            <div class="col-sm-10">
+              <select name="payment_aditum_billet_geo_zone_id" id="input-geo-zone" class="form-control">
+                <option value="0">{{ text_all_zones }}</option>
+                {% for geo_zone in geo_zones %}
+                {% if geo_zone.geo_zone_id == payment_aditum_billet_geo_zone_id %}
+                <option value="{{ geo_zone.geo_zone_id }}" selected="selected">{{ geo_zone.name }}</option>
+                {% else %}
+                <option value="{{ geo_zone.geo_zone_id }}">{{ geo_zone.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="payment_aditum_billet_status" id="input-status" class="form-control">
+                {% if payment_aditum_billet_status %}
+                <option value="1" selected="selected">{{ text_enabled }}</option>
+                <option value="0">{{ text_disabled }}</option>
+                {% else %}
+                <option value="1">{{ text_enabled }}</option>
+                <option value="0" selected="selected">{{ text_disabled }}</option>
+                {% endif %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-sort-order">{{ entry_sort_order }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_aditum_billet_sort_order" value="{{ payment_aditum_billet_sort_order }}" placeholder="{{ entry_sort_order }}" id="input-sort-order" class="form-control" />
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }} 

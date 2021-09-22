@@ -1,0 +1,257 @@
+<div class="row">
+<div class="row">
+<form class="form-aditum-cc form col-md-6">
+	<input type="hidden" name="antifraud_token" id="antifraud_token" />
+	<div class="form-group col-md-6">
+		<label class="control-label">Nome do titular do Cartão</label>
+		<input type="text" class="form-control" value="{{ nome_completo }}" name="card_holder_name">
+	</div>
+	<div class="form-group col-md-6">
+		<label class="control-label">CPF</label>
+		<input type="text" class="form-control" value="{{ documento }}" name="card_holder_document">
+	</div>
+	<div class="form-group col-md-6">
+		<label class="control-label">Número do Cartão</label>
+		<div class="container-bandeira">
+			<input type="text" class="form-control" name="aditum_card_number" value="4444333322221111">
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="row">
+			<div class="col-md-12">
+				<label class="control-label">Data de validade</label>
+			</div>
+			<div class="form-group col-md-6">
+				<input type="text" class="form-control" placeholdr="MÊS" value="10" name="aditum_card_expiration_month">
+			</div>
+			<div class="form-group col-md-6">
+				<input type="text" class="form-control" placeholder="ANO" value="22" name="aditum_card_expiration_year">
+			</div>
+		</div>
+	</div>
+	<div class="form-group col-md-6">
+		<label class="control-label">Número de Verificação do Cartão</label>
+		<input type="text" class="form-control" name="aditum_card_cvv" value="879">
+	</div>
+	<div class="form-group col-md-6">
+		<label class="control-label">Quantidade de parcelas</label>
+		<select name="aditum_card_installment" id="aditum_card_installment" class="form-control">
+			<option value="">Selecione a quantidade de parcelas</option>
+			{% for i in range(1, maximo_parcelas) %}
+				{% if (order_info.total/i) > parcela_minima %}
+					<option value="{{ i }}">{{ i }}x de R${{ (order_info.total/i)|number_format(2, ',', '.') }}</option>
+				{% endif %}
+			{% endfor %}
+		</select>
+		<div class="buttons">
+			<div class="pull-right">
+				<input type="button" value="{{ button_confirm }}" id="button-confirm" data-loading-text="{{ text_loading }}" class="btn btn-primary" />
+			</div>
+		</div>
+	</div>
+</form>
+<div class="col-md-6">
+	<h3>Você está pagando com:</h3>
+	<a href="https://aditum.com.br" target="_blank"><img style="width: 70%;" src="https://aditum.com.br/wp-content/themes/aditum/images/hd-logo.png" /></a>
+</div>
+</div>
+</div>
+<style>
+	[name="aditum_card_number"] {
+		padding-left: 50px;
+    background-image: url("image/payment/aditum/card.svg");
+    background-repeat: no-repeat;
+    background-size: 38px;
+    background-position: 4px;
+	}
+</style>
+<script type="text/javascript"><!--
+$('[name="aditum_card_number"]').on('blur, focus, keyup', function() {
+	let bin = jQuery(this).val()
+	if(bin.toString().length == 16) {
+		$.ajax({
+			method: 'POST',
+			url: 'index.php?route=extension/payment/aditum_cc/card_brand',
+			dataType: 'json',
+			data: {bin: bin},
+			beforeSend: function() {
+			},
+			complete: function() {
+			},
+			success: function(res) {
+				document.querySelector('[name="aditum_card_number"]').style.backgroundImage = `url("image/payment/aditum/${res.brand}.svg")`
+			},
+			error: function(xhr, ajaxOptions, thrownError) {
+				alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+			}
+		});
+	}
+});
+$('#button-confirm').on('click', function() {
+	$.ajax({
+		method: 'POST',
+		url: 'index.php?route=extension/payment/aditum_cc/confirm',
+		dataType: 'json',
+		data: jQuery('.form-aditum-cc').serialize(),
+		beforeSend: function() {
+			$('#button-confirm').button('loading');
+		},
+		complete: function() {
+			$('#button-confirm').button('reset');
+		},
+		success: function(json) {
+			if (json['redirect']) {
+				location = json['redirect'];	
+			}
+			if (json['error']) {
+				alert(json['error'])
+			}
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+		}
+	});
+});
+//--></script>
+<script>
+	
+function getAntiFraudType() {
+	return '{{ tipo_antifraude }}'
+}
+function getAntiFraudId() {
+	return '{{ token_antifraude }}'
+}
+function loadKonduto() {
+	try {
+			(() => {
+					const period = 300;
+					const limit = 20 * 1e3;
+					let nTry = 0;
+					const intervalID = setInterval(() => {
+							const kondutoObj = (window).Konduto;
+							let clear = limit / period <= ++nTry;
+							if (
+									typeof kondutoObj !== "undefined" &&
+									typeof kondutoObj.getVisitorID !== "undefined"
+							) {
+									const visitorID = kondutoObj.getVisitorID();
+									//this.kondutoVisitorID = visitorID;
+									console.log("loadKonduto");
+									console.log(visitorID);
+									document.getElementById('antifraud_token').setAttribute('value',visitorID);
+									clear = true;
+							}
+							if (clear) {
+									clearInterval(intervalID);
+							}
+					}, period);
+			})();
+			return;
+	} catch (error) {
+			console.log(error)
+			return;
+	}
+}
+
+function loadClearSale(publicKey) {
+	try {
+			(() => {
+					const period = 300;
+					const limit = 20 * 1e3;
+					let nTry = 0;
+					const intervalID = setInterval(() => {
+							const csdpObj = (window).csdp;
+							const csdmObj = (window).csdm;
+
+							let clear = limit / period <= ++nTry;
+							if (
+									typeof csdpObj !== "undefined" &&
+									typeof csdmObj !== "undefined" &&
+									typeof publicKey !== "undefined"
+							) {
+									(window).csdp("app", publicKey);
+									(window).csdp("outputsessionid", "antifraud_token");
+									(window).csdm('app', publicKey);
+									(window).csdm('mode', 'manual');
+									(window).csdm("send", "checkout");
+									// console.log('clearsaleSessionId');
+									// var visitorID = document.getElementById('clearsaleSessionId').getAttribute('value');
+									// console.log(visitorID);
+									// document.getElementById('antifraud_token').innerHTML = visitorID;
+									clear = true;
+							}
+							if (clear) {
+									clearInterval(intervalID);
+							}
+					}, period);
+			})();
+			return;
+	} catch (error) {
+			return;
+	}
+}
+if (getAntiFraudType()=='konduto') {
+	try {
+			const pk = getAntiFraudId();
+			// @ts-ignore
+			window.__kdt = window.__kdt || [];
+			// @ts-ignore
+			window.__kdt.push({public_key: pk});
+			((a, b, c, d, e, f, g) => {
+					a['KdtObject'] = e;
+					a[e] = a[e] || function () {
+							(a[e].q = a[e].q || []).push(arguments)
+					}
+					// @ts-ignore
+					a[e].l = 1 * new Date();
+					f = b.createElement(c),
+							g = b.getElementsByTagName(c)[0];
+					// @ts-ignore
+					f.src = d;
+					// @ts-ignore
+					f.async = true;
+					// @ts-ignore
+					g.parentNode.insertBefore(f, g)
+			})(window, document, 'script', 'https://i.k-analytix.com/k.js?now=' + Date.now(), 'csdp');
+			loadKonduto();
+	} catch (error) {
+	}
+}
+// CLear Sale
+console.log(getAntiFraudType())
+if (getAntiFraudType()=='clearsale') {
+	((a, b, c, d, e, f, g) => {
+			a['CsdpObject'] = e;
+			a[e] = a[e] || function () {
+					(a[e].q = a[e].q || []).push(arguments)
+			}
+			// @ts-ignore
+			a[e].l = 1 * new Date();
+			f = b.createElement(c),
+					g = b.getElementsByTagName(c)[0];
+			// @ts-ignore
+			f.src = d;
+			// @ts-ignore
+			f.async = true;
+			// @ts-ignore
+			g.parentNode.insertBefore(f, g)
+	})(window, document, 'script', '//device.clearsale.com.br/p/fp.js?now=' + Date.now(), 'csdp');
+	(function (a, b, c, d, e, f, g) {
+			a['CsdmObject'] = e;
+			a[e] = a[e] || function () {
+					(a[e].q = a[e].q || []).push(arguments)
+			};
+			// @ts-ignore
+			a[e].l = 1 * new Date();
+			f = b.createElement(c);
+			g = b.getElementsByTagName(c)[0];
+			// @ts-ignore
+			f.src = d;
+			// @ts-ignore
+			f.async = true;
+			// @ts-ignore
+			g.parentNode.insertBefore(f, g);
+	})(window, document, 'script', '//device.clearsale.com.br/m/cs.js?now=' + Date.now(), 'csdm')
+	loadClearSale(getAntiFraudId());
+}
+</script>

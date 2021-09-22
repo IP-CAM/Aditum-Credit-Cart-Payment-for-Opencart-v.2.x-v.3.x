@@ -1,0 +1,183 @@
+<form class="form-aditum-billet form">
+	<input type="hidden" name="antifraud_token" id="antifraud_token" />
+</form>
+<div class="row text-center">
+	<div class="col-md-6 col-md-push-3">
+		<div class="logo">
+				<h3>Seu boleto será gerado por:</h3>
+				<a href="https://aditum.com.br" target="_blank"><img style="width: 300px" src="https://aditum.com.br/wp-content/themes/aditum/images/hd-logo.png" /></a>
+		</div>
+		<br/>
+		<div class="buttons">
+				<input type="button" value="{{ button_confirm }}" id="button-confirm" data-loading-text="{{ text_loading }}" class="btn btn-primary" />
+		</div>
+	</div>
+</div>
+<script type="text/javascript"><!--
+$('#button-confirm').on('click', function() {
+	$.ajax({
+		url: 'index.php?route=extension/payment/aditum_billet/confirm',
+		dataType: 'json',
+		data: jQuery('.form-aditum-billet').serialize(),
+		beforeSend: function() {
+			$('#button-confirm').button('loading');
+		},
+		complete: function() {
+			$('#button-confirm').button('reset');
+		},
+		success: function(json) {
+			if (json['redirect']) {
+				location = json['redirect'];	
+			}
+			if (json['error']) {
+				alert(json['error'])
+			}
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+		}
+	});
+});
+//--></script>
+<script>
+	
+function getAntiFraudType() {
+	return '{{ tipo_antifraude }}'
+}
+function getAntiFraudId() {
+	return '{{ token_antifraude }}'
+}
+function loadKonduto() {
+	try {
+			(() => {
+					const period = 300;
+					const limit = 20 * 1e3;
+					let nTry = 0;
+					const intervalID = setInterval(() => {
+							const kondutoObj = (window).Konduto;
+							let clear = limit / period <= ++nTry;
+							if (
+									typeof kondutoObj !== "undefined" &&
+									typeof kondutoObj.getVisitorID !== "undefined"
+							) {
+									const visitorID = kondutoObj.getVisitorID();
+									//this.kondutoVisitorID = visitorID;
+									console.log("loadKonduto");
+									console.log(visitorID);
+									document.getElementById('antifraud_token').setAttribute('value',visitorID);
+									clear = true;
+							}
+							if (clear) {
+									clearInterval(intervalID);
+							}
+					}, period);
+			})();
+			return;
+	} catch (error) {
+			console.log(error)
+			return;
+	}
+}
+
+function loadClearSale(publicKey) {
+	try {
+			(() => {
+					const period = 300;
+					const limit = 20 * 1e3;
+					let nTry = 0;
+					const intervalID = setInterval(() => {
+							const csdpObj = (window).csdp;
+							const csdmObj = (window).csdm;
+
+							let clear = limit / period <= ++nTry;
+							if (
+									typeof csdpObj !== "undefined" &&
+									typeof csdmObj !== "undefined" &&
+									typeof publicKey !== "undefined"
+							) {
+									(window).csdp("app", publicKey);
+									(window).csdp("outputsessionid", "antifraud_token");
+									(window).csdm('app', publicKey);
+									(window).csdm('mode', 'manual');
+									(window).csdm("send", "checkout");
+									// console.log('clearsaleSessionId');
+									// var visitorID = document.getElementById('clearsaleSessionId').getAttribute('value');
+									// console.log(visitorID);
+									// document.getElementById('antifraud_token').innerHTML = visitorID;
+									clear = true;
+							}
+							if (clear) {
+									clearInterval(intervalID);
+							}
+					}, period);
+			})();
+			return;
+	} catch (error) {
+			return;
+	}
+}
+if (getAntiFraudType()=='konduto') {
+	try {
+			const pk = getAntiFraudId();
+			// @ts-ignore
+			window.__kdt = window.__kdt || [];
+			// @ts-ignore
+			window.__kdt.push({public_key: pk});
+			((a, b, c, d, e, f, g) => {
+					a['KdtObject'] = e;
+					a[e] = a[e] || function () {
+							(a[e].q = a[e].q || []).push(arguments)
+					}
+					// @ts-ignore
+					a[e].l = 1 * new Date();
+					f = b.createElement(c),
+							g = b.getElementsByTagName(c)[0];
+					// @ts-ignore
+					f.src = d;
+					// @ts-ignore
+					f.async = true;
+					// @ts-ignore
+					g.parentNode.insertBefore(f, g)
+			})(window, document, 'script', 'https://i.k-analytix.com/k.js?now=' + Date.now(), 'csdp');
+			loadKonduto();
+	} catch (error) {
+	}
+}
+// CLear Sale
+console.log(getAntiFraudType())
+if (getAntiFraudType()=='clearsale') {
+	((a, b, c, d, e, f, g) => {
+			a['CsdpObject'] = e;
+			a[e] = a[e] || function () {
+					(a[e].q = a[e].q || []).push(arguments)
+			}
+			// @ts-ignore
+			a[e].l = 1 * new Date();
+			f = b.createElement(c),
+					g = b.getElementsByTagName(c)[0];
+			// @ts-ignore
+			f.src = d;
+			// @ts-ignore
+			f.async = true;
+			// @ts-ignore
+			g.parentNode.insertBefore(f, g)
+	})(window, document, 'script', '//device.clearsale.com.br/p/fp.js?now=' + Date.now(), 'csdp');
+	(function (a, b, c, d, e, f, g) {
+			a['CsdmObject'] = e;
+			a[e] = a[e] || function () {
+					(a[e].q = a[e].q || []).push(arguments)
+			};
+			// @ts-ignore
+			a[e].l = 1 * new Date();
+			f = b.createElement(c);
+			g = b.getElementsByTagName(c)[0];
+			// @ts-ignore
+			f.src = d;
+			// @ts-ignore
+			f.async = true;
+			// @ts-ignore
+			g.parentNode.insertBefore(f, g);
+	})(window, document, 'script', '//device.clearsale.com.br/m/cs.js?now=' + Date.now(), 'csdm')
+	loadClearSale(getAntiFraudId());
+}
+</script>
