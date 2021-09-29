@@ -19,21 +19,31 @@
 
 ## Instalação
 
-### Versão 1.5.x
-1. Copie todo o conteúdo da pasta "upload" para a raíz da sua loja
-2. Acesse o painel administrativo da sua loja
-3. Acesse Extensões > Formas de pagamento e instale os módulos (Cartão de crédito e/ou boleto)
-4. Preencha as informações necessária (as chaves API e criptografia são encontradas no dashboard do Aditum)
-5. Pronto! O módulo está funcionando
+### **PASSO 1**
 
-### Versão 2.x
+Acesse o menu **Extensões > Instalador**
 
-Para versão 2.0 à 2.2 do Opencart utilize os arquivos da pasta 2.x.
+ou 
 
-1. Faça o upload do arquivo ZIP da raiz do seu servidor
-2. Acesse extensões pagamentos
-3. Instale e configure
-4. Pronto! O módulo está funcionando
+**Extensions > Installer**
+
+O Arquivo aditum-opencart.ocmod.zip e aguarde a instalação.
+
+### **PASSO 2**
+
+Depois acesse **Extensões > Modificações**
+
+ou 
+
+**Extensions > Modifications**
+
+E limpe o cache de modificações clicando no botão AZUL do lado superior esquerdo.
+
+Veja se Aditum vai aparecer na lista de modificações.
+
+### **PRONTO! TUDO INSTALADO :)**
+
+Essas modificações são para adicionar o botão para baixar boleto na página de obrigado. Assim como o código de barras.
 
 ## Campos Customizáveis
 
