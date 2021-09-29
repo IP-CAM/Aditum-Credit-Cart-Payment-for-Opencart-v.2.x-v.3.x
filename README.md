@@ -2,7 +2,7 @@
 
 ## Compatibilidade
 
- OpenCart 1.5.x à 2.3.x
+ OpenCart 2.x à 3.x
 
 ## Funcionalidades
 
