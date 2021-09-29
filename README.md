@@ -19,7 +19,11 @@
 
 ## Instalação
 
-### **PASSO 1**
+### **PASSO 2**
+
+Baixe os arquivos do repositorio e extraia os arquivos.
+
+### **PASSO 2**
 
 Acesse o menu **Extensões > Instalador**
 
@@ -27,9 +31,9 @@ ou
 
 **Extensions > Installer**
 
-O Arquivo aditum-opencart.ocmod.zip e aguarde a instalação.
+Envie o arquivo aditum-opencart.ocmod.zip e aguarde a instalação.
 
-### **PASSO 2**
+### **PASSO 3**
 
 Depois acesse **Extensões > Modificações**
 
