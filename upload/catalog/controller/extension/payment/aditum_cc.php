@@ -56,6 +56,14 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 	}
 
 	public function confirm() {
+		if ( empty( $_REQUEST['aditum_card_installment'] ) ) {
+			$this->response->addHeader('Content-Type: application/json');
+			return $this->response->setOutput(json_encode(['error' => 'Selecione a <strong>Quantidade de parcelas</strong>']));	
+		}
+		if ( empty( $_REQUEST['aditum_checkbox'] ) ) {
+			$this->response->addHeader('Content-Type: application/json');
+			return $this->response->setOutput(json_encode(['error' => 'Aceite os TERMOS & CONDIÇÕES para continuar']));	
+		}
 		$this->init_config();
 		$json = array();
 		$this->load->model('checkout/order');
@@ -91,7 +99,7 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 
 	private function createTransaction($data) {
 
-		require DIR_SYSTEM . '../vendor/autoload.php';
+		require DIR_SYSTEM . 'library/vendor/autoload.php';
 
 		$order = $data['order_info'];
 		
@@ -166,7 +174,13 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 		$authorization->transactions->setAmount( $amount );
 		$authorization->transactions->setPaymentType( AditumPayments\ApiSDK\Enum\PaymentType::CREDIT );
 		$authorization->transactions->setInstallmentNumber( isset($_POST['aditum_card_installment']) ? $_POST['aditum_card_installment'] : 1 ); // Só pode ser maior que 1 se o tipo de transação for crédito.
-		$authorization->transactions->setInstallmentType(AditumPayments\ApiSDK\Enum\InstallmentType::MERCHANT);
+		
+		if($_POST['aditum_card_installment']>1) {
+			$authorization->transactions->setInstallmentType(AditumPayments\ApiSDK\Enum\InstallmentType::MERCHANT);
+		}
+		else {
+			$authorization->transactions->setInstallmentType(AditumPayments\ApiSDK\Enum\InstallmentType::NONE);
+		}
 
 		$authorization->transactions->card->setCardNumber( preg_replace( '/[^\d]+/', '', $_POST['aditum_card_number'] ) );
 		$authorization->transactions->card->setCVV( $_POST['aditum_card_cvv'] );

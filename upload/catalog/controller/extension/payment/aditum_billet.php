@@ -55,6 +55,10 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 	}
 
 	public function confirm() {
+		if ( ! isset( $_REQUEST['aditum_checkbox'] ) ) {
+			$this->response->addHeader('Content-Type: application/json');
+			return $this->response->setOutput(json_encode(['error' => 'Aceite os TERMOS & CONDIÇÕES para continuar']));	
+		}
 		$this->init_config();
 		$json = array();
 		$this->load->model('checkout/order');
@@ -89,7 +93,7 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 
 	private function createTransaction($data) {
 
-		require DIR_SYSTEM . '../vendor/autoload.php';
+		require DIR_SYSTEM . 'library/vendor/autoload.php';
 
 		$order = $data['order_info'];
 		
@@ -182,7 +186,8 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 				 $url = AditumPayments\ApiSDK\Configuration::DEV_URL;
 					 $urlBoleto = str_replace('/v2/', '', $url) . "{$res['charge']->transactions[0]->bankSlipUrl}";
 					 $this->session->data['url_boleto'] = $urlBoleto;
-					$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "Pedido realizado com sucesso <a style='background:#9c2671;color:#fff;font-size:9px;text-transform:uppercase;font-weight:bold;padding:5px 10px;border-radius:2px;' href='{$urlBoleto}' target='_blank'>clique aqui para pagar o boleto</a>", true);
+					 $this->session->data['aditum_transaction'] = json_encode($res['charge']->transactions[0]);
+					 $this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "Pedido realizado com sucesso <a style='background:#9c2671;color:#fff;font-size:9px;text-transform:uppercase;font-weight:bold;padding:5px 10px;border-radius:2px;' href='{$urlBoleto}' target='_blank'>clique aqui para pagar o boleto</a>", true);
 					$json['success'] = true;
 					$json['redirect'] = $this->url->link('checkout/success');
 			}

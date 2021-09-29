@@ -35,8 +35,8 @@
             <label class="col-sm-2 control-label" for="input-order-modo">{{ aditum_cc_modo }}</label>
             <div class="col-sm-10">
               <select name="payment_aditum_cc_modo" id="input-order-modo" class="form-control">
-                <option value="sandbox" selected="selected">Sandbox</option>
-                <option {% if payment_aditum_cc_modo == 'production' %}selected{% endif %}value="production">Produção</option>
+                <option value="sandbox" {% if payment_aditum_cc_modo == 'sandbox' %}selected{% endif %}>Sandbox</option>
+                <option {% if payment_aditum_cc_modo == 'production' %}selected{% endif %} value="production">Produção</option>
               </select>
             </div>
           </div>
