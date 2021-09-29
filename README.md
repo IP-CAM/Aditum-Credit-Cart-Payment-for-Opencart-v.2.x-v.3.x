@@ -19,7 +19,7 @@
 
 ## Instalação
 
-### **PASSO 2**
+### **PASSO 1**
 
 Baixe os arquivos do repositorio e extraia os arquivos.
 
