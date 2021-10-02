@@ -2,7 +2,7 @@
 <modification>
   <name>Aditum</name>
   <code>aditum_payment</code>
-  <version>0.0.1</version>
+  <version>1.0.0</version>
   <author>Aditum</author>
   <link>https://aditum.com.br</link>
 
@@ -13,12 +13,12 @@
       </search>
       <add position="before">
         <![CDATA[
-        {% if boleto %}
+        {% if url_boleto %}
         <div class="pull-left col-md-5">
           <a href="https://aditum.com.br" target="_blank"><img style="width: 300px;display:block;margin:auto;" src="https://aditum.com.br/wp-content/themes/aditum/images/hd-logo.png" /></a><br/>
-          <a href="{{ boleto }}" style="margin: 15px auto;display:block;" class="btn btn-primary" target="_blank">CLIQUE AQUI PARA <strong>BAIXAR BOLETO</strong></a>
+          <a href="{{ url_boleto }}" style="margin: 15px auto;display:block;" class="btn btn-primary" target="_blank">CLIQUE AQUI PARA <strong>BAIXAR BOLETO</strong></a>
           <!-- Target -->
-          <input style="text-align:center;width:100%;padding:5px;" id="foo" value="{{ aditum_transaction.barcode }}" disabled>
+          <input style="text-align:center;width:100%;padding:5px;" id="foo" value="{{ linha_digitavel }}" disabled>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
             <script>
               window.addEventListener('load', function(){
@@ -32,7 +32,7 @@
             </script>
             <div id="alert"></div>
             <!-- Trigger -->
-            <button data-clipboard-target style="margin-top:15px;display:flex;align-items:center;justify-content:space-between;width:100%;font-size:14px;text-transform:uppercase;" class="btn btn-success" data-clipboard-text="{{ aditum_transaction.barcode }}">
+            <button data-clipboard-target style="margin-top:15px;display:flex;align-items:center;justify-content:space-between;width:100%;font-size:14px;text-transform:uppercase;" class="btn btn-success" data-clipboard-text="{{ linha_digitavel }}">
             <span></span> Copiar código de barras <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#fff" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.3 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M433.941 65.941l-51.882-51.882A48 48 0 0 0 348.118 0H176c-26.51 0-48 21.49-48 48v48H48c-26.51 0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51 0 48-21.49 48-48v-48h80c26.51 0 48-21.49 48-48V99.882a48 48 0 0 0-14.059-33.941zM266 464H54a6 6 0 0 1-6-6V150a6 6 0 0 1 6-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 0 1-6 6zm128-96H182a6 6 0 0 1-6-6V54a6 6 0 0 1 6-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 0 1-6 6zm6-256h-64V48h9.632c1.591 0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 0 1 1.757 4.243V112z"/></svg>
             </button>
           </div>
@@ -50,8 +50,8 @@
       <add position="after">
         <![CDATA[
         if(isset($this->session->data['url_boleto'])):
-          $data['boleto'] = $this->session->data['url_boleto'];
-					$data['aditum_transaction'] = json_decode($this->session->data['aditum_transaction']);
+          $data['url_boleto'] = $this->session->data['url_boleto'];
+          $data['linha_digitavel'] = $this->session->data['linha_digitavel'];
         endif;
         ]]>
       </add>

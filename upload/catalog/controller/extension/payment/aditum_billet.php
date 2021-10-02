@@ -186,7 +186,7 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 				 $url = AditumPayments\ApiSDK\Configuration::DEV_URL;
 					 $urlBoleto = str_replace('/v2/', '', $url) . "{$res['charge']->transactions[0]->bankSlipUrl}";
 					 $this->session->data['url_boleto'] = $urlBoleto;
-					 $this->session->data['aditum_transaction'] = json_encode($res['charge']->transactions[0]);
+					 $this->session->data['linha_digitavel'] = $res['charge']->transactions[0]->digitalLine;
 					 $this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "Pedido realizado com sucesso <a style='background:#9c2671;color:#fff;font-size:9px;text-transform:uppercase;font-weight:bold;padding:5px 10px;border-radius:2px;' href='{$urlBoleto}' target='_blank'>clique aqui para pagar o boleto</a>", true);
 					$json['success'] = true;
 					$json['redirect'] = $this->url->link('checkout/success');
@@ -234,7 +234,7 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 		}
 		else{
 		}
-		file_put_contents(__DIR__ . '/log-aditum-cc.txt', json_encode($input), FILE_APPEND);
+		// file_put_contents(__DIR__ . '/log-aditum-cc.txt', json_encode($input), FILE_APPEND);
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode([]));		
 	}
