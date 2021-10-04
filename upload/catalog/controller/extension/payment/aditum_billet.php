@@ -183,7 +183,12 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::PRE_AUTHORIZED === $res['status'] ) {
 				 $this->load->model('checkout/order');
 				 $checkout = true;
-				 $url = AditumPayments\ApiSDK\Configuration::DEV_URL;
+					if ( 'sandbox' == $this->environment ) {
+						$url = AditumPayments\ApiSDK\Configuration::DEV_URL;
+					}
+					else {
+						$url = AditumPayments\ApiSDK\Configuration::PROD_URL;
+					}
 					 $urlBoleto = str_replace('/v2/', '', $url) . "{$res['charge']->transactions[0]->bankSlipUrl}";
 					 $this->session->data['url_boleto'] = $urlBoleto;
 					 $this->session->data['linha_digitavel'] = $res['charge']->transactions[0]->digitalLine;
