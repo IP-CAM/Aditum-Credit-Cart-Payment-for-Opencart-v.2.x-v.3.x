@@ -38,10 +38,14 @@
 		<label class="control-label">Quantidade de parcelas</label>
 		<select name="aditum_card_installment" id="aditum_card_installment" class="form-control">
 			<option value="">Selecione a quantidade de parcelas</option>
-			{% for i in range(1, maximo_parcelas) %}
-				{% if (order_info.total/i) > parcela_minima %}
-					<option value="{{ i }}">{{ i }}x de R${{ (order_info.total/i)|number_format(2, ',', '.') }}</option>
-				{% endif %}
+      {% if order_info.total < parcela_minima %}
+					<option value="1">1x de R${{ order_info.total|number_format(2, ',', '.') }}</option>
+			{% else %}
+  			{% for i in range(1, maximo_parcelas) %}
+  				{% if (order_info.total/i) > parcela_minima %}
+  					<option value="{{ i }}">{{ i }}x de R${{ (order_info.total/i)|number_format(2, ',', '.') }}</option>
+  				{% endif %}
+  			{% endfor %}
 			{% endfor %}
 		</select>
 	</div>
