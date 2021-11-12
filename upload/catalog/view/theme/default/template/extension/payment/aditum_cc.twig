@@ -46,7 +46,7 @@
   					<option value="{{ i }}">{{ i }}x de R${{ (order_info.total/i)|number_format(2, ',', '.') }}</option>
   				{% endif %}
   			{% endfor %}
-			{% endfor %}
+			{% endif %}
 		</select>
 	</div>
 	<div class="col-md-12">
