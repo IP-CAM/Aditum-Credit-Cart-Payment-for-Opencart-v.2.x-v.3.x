@@ -6,6 +6,7 @@ use AditumPayments\ApiSDK\Configuration;
 use AditumPayments\ApiSDK\Controller\Authorization;
 use AditumPayments\ApiSDK\Controller\Boleto;
 use AditumPayments\ApiSDK\Controller\PreAuthorization;
+use AditumPayments\ApiSDK\Controller\Pix;
 use AditumPayments\ApiSDK\Helper\Utils;
 
 class Gateway {
@@ -21,6 +22,9 @@ class Gateway {
             case "PreAuthorization":
                 $preAuthorization = new PreAuthorization;
                 return $preAuthorization->charge($data);
+            case "Pix":
+                $pix = new Pix;
+                return $pix->charge($data);
             case "Undefined":
                 Utils::log("Payment::charge = Defina o tipo de transação\n");
                 return NULL;
