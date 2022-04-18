@@ -201,6 +201,8 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 		$authorization->transactions->card->billingAddress->setComplement( $data['custom_fields'][$this->campo_complemento] );
 		
 		$res = $gateway->charge( $authorization );
+		
+		$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
 
 		if ( isset( $res['status'] ) ) {
 			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::AUTHORIZED === $res['status'] ) {
