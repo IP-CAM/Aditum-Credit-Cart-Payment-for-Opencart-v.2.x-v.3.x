@@ -41,6 +41,7 @@ $preAuthorization->customer->phone->setType(AditumPayments\ApiSDK\Enum\PhoneType
 $preAuthorization->transactions->setAmount(100);
 $preAuthorization->transactions->setPaymentType(AditumPayments\ApiSDK\Enum\PaymentType::CREDIT);
 $preAuthorization->transactions->setInstallmentNumber(2); // Só pode ser maior que 1 se o tipo de transação for crédito.
+$preAuthorization->transactions->setInstallmentType(AditumPayments\ApiSDK\Enum\InstallmentType::MERCHANT);
 
 // Transactions->card
 $preAuthorization->transactions->card->setCardNumber("4444333322221111"); // Aprovado

@@ -37,6 +37,49 @@
             </button>
           </div>
         {% endif %}
+        {% if qrCode %}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
+        <div class="pull-left col-md-5">
+          <a href="https://aditum.com.br" target="_blank"><img style="width: 300px;display:block;margin:auto;" src="https://aditum.com.br/wp-content/themes/aditum/images/hd-logo.png" /></a><br/>
+          <div class="pix-thankyou">
+            <div class="codigo-qr">
+                <h3>Pagar com código Copia e Cola:</h3>
+                <div class="pix">
+                  <div class="row">
+                    <div class="col-md-9">
+                      <input class="form-control" id="codigo" type="text" value="{{ qrCode }}">
+                    </div>
+                    <div class="col-md-3">
+                      <button class="btn btn-success" data-clipboard-target="#codigo">
+                          COPIAR CÓDIGO
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div id="msg-copy"></div>
+                <script>
+                    var clipboard = new ClipboardJS('.btn');
+                    clipboard.on('success', function(e) {
+                        e.clearSelection();
+                        var msg = document.querySelector('#msg-copy');
+                        msg.innerHTML = 'Código copiado!'
+                        setTimeout(() => msg.innerHTML = '', 3000)
+                    });
+                </script>
+                <div class="alert alert-error">O código Pix é válido por 30 minutos</div>
+            </div>
+            <div class="image-qr">  
+                <h3>Pagar com QR Code:</h3>
+                <div class="pix-qr">
+                    <img width="300" src="data:image/jpg;base64,{{ qrCodeBase64 }}">
+                </div>
+                <div class="alert alert-error">O QR Code é válido por 30 minutos</div>      
+            </div>
+            <br/>
+            <br/>
+          </div>
+        </div>
+        {% endif %}
         ]]>
       </add>
     </operation>
@@ -49,10 +92,19 @@
       </search>
       <add position="after">
         <![CDATA[
-        if(isset($this->session->data['url_boleto'])):
-          $data['url_boleto'] = $this->session->data['url_boleto'];
-          $data['linha_digitavel'] = $this->session->data['linha_digitavel'];
-        endif;
+        if(isset($_GET['order_id'])){
+          $this->load->model('extension/payment/aditum');
+          $aditum_data = json_decode($this->model_extension_payment_aditum->get_data($this->session->data['order_id']));
+          if(isset($aditum_data->charge->transactions[0]->qrCode)) {
+            $data['qrCode'] = $aditum_data->charge->transactions[0]->qrCode;
+            $data['qrCodeBase64'] = $aditum_data->charge->transactions[0]->qrCodeBase64;
+          }
+          if(isset($aditum_data->charge->transactions[0]->bankSlipUrl)) {
+            $urlBoleto = str_replace('/v2/', '', $url) . "{$aditum_data->charge->transactions[0]->bankSlipUrl}";
+            $data['url_boleto'] = $urlBoleto;
+            $data['linha_digitavel'] = $aditum_data->charge->transactions[0]->digitalLine;
+          }
+        }
         ]]>
       </add>
     </operation>

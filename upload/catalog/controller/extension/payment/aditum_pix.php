@@ -1,5 +1,5 @@
 <?php
-class ControllerExtensionPaymentAditumBillet extends Controller {
+class ControllerExtensionPaymentAditumPix extends Controller {
 
 	private $total;
 	private $order_status_id;
@@ -9,11 +9,6 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 	private $environment;
 	private $titulo_gateway;
 	private $descricao_gateway;
-	private $instrucoes;
-	private $expiracao;
-	private $dias_multa;
-	private $valor_multa;
-	private $percentual_multa;
 	private $merchant_cnpj;
 	private $merchant_token;
 	private $campo_documento;
@@ -24,34 +19,29 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 	private $token_antifraude;
 
 	public function init_config() {
-		$this->total = $this->config->get('payment_aditum_billet_total');
-		$this->order_status_id = $this->config->get('payment_aditum_billet_order_status_id');
-		$this->geo_zone_id = $this->config->get('payment_aditum_billet_geo_zone_id');
-		$this->status = $this->config->get('payment_aditum_billet_status');
-		$this->sort_order = $this->config->get('payment_aditum_billet_sort_order');
-		$this->environment = $this->config->get('payment_aditum_billet_modo');
-		$this->titulo_gateway = $this->config->get('payment_aditum_billet_titulo_gateway');
-		$this->descricao_gateway = $this->config->get('payment_aditum_billet_descricao_gateway');
-		$this->instrucoes = $this->config->get('payment_aditum_billet_instrucoes');
-		$this->expiracao = $this->config->get('payment_aditum_billet_expiracao');
-		$this->dias_multa = $this->config->get('payment_aditum_billet_dias_multa');
-		$this->valor_multa = $this->config->get('payment_aditum_billet_valor_multa');
-		$this->percentual_multa = $this->config->get('payment_aditum_billet_percentual_multa');
-		$this->merchant_cnpj = $this->config->get('payment_aditum_billet_cnpj');
-		$this->merchant_token = $this->config->get('payment_aditum_billet_merchant_token');
-		$this->campo_documento = $this->config->get('payment_aditum_billet_campo_documento');
-		$this->campo_numero = $this->config->get('payment_aditum_billet_campo_numero');
-		$this->campo_complemento = $this->config->get('payment_aditum_billet_campo_complemento');
-		$this->campo_bairro = $this->config->get('payment_aditum_billet_campo_bairro');
-		$this->tipo_antifraude = $this->config->get('payment_aditum_billet_tipo_antifraude');
-		$this->token_antifraude = $this->config->get('payment_aditum_billet_token_antifraude');
+		$this->total = $this->config->get('payment_aditum_pix_total');
+		$this->order_status_id = $this->config->get('payment_aditum_pix_order_status_id');
+		$this->geo_zone_id = $this->config->get('payment_aditum_pix_geo_zone_id');
+		$this->status = $this->config->get('payment_aditum_pix_status');
+		$this->sort_order = $this->config->get('payment_aditum_pix_sort_order');
+		$this->environment = $this->config->get('payment_aditum_pix_modo');
+		$this->titulo_gateway = $this->config->get('payment_aditum_pix_titulo_gateway');
+		$this->descricao_gateway = $this->config->get('payment_aditum_pix_descricao_gateway');
+		$this->merchant_cnpj = $this->config->get('payment_aditum_pix_cnpj');
+		$this->merchant_token = $this->config->get('payment_aditum_pix_merchant_token');
+		$this->campo_documento = $this->config->get('payment_aditum_pix_campo_documento');
+		$this->campo_numero = $this->config->get('payment_aditum_pix_campo_numero');
+		$this->campo_complemento = $this->config->get('payment_aditum_pix_campo_complemento');
+		$this->campo_bairro = $this->config->get('payment_aditum_pix_campo_bairro');
+		$this->tipo_antifraude = $this->config->get('payment_aditum_pix_tipo_antifraude');
+		$this->token_antifraude = $this->config->get('payment_aditum_pix_token_antifraude');
 	}
 
 	public function index() {
 		$this->init_config();
 		$data['tipo_antifraude'] = $this->tipo_antifraude;
 		$data['token_antifraude'] = $this->token_antifraude;
-		return $this->load->view('extension/payment/aditum_billet', $data);
+		return $this->load->view('extension/payment/aditum_pix', $data);
 	}
 
 	public function confirm() {
@@ -122,12 +112,8 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 		$customer_phone           = substr( $telephone, 2 );
 
 		$gateway = new AditumPayments\ApiSDK\Gateway();
-		$boleto  = new AditumPayments\ApiSDK\Domains\Boleto();
+		$boleto  = new AditumPayments\ApiSDK\Domains\Pix();
 
-		$deadline = $this->expiracao;
-
-		$boleto->setDeadline( $deadline );
-		$boleto->setSessionId($_REQUEST['antifraud_token']);
 		$boleto->setMerchantChargeId($order['order_id']);
 
 		// ! Customer
@@ -169,16 +155,6 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 
 		// ! Transactions
 		$boleto->transactions->setAmount( $amount );
-		$boleto->transactions->setInstructions( $this->instrucoes );
-
-		// // Transactions->fine (opcional)
-
-		if(!empty($this->dias_multa)){
-			$boleto->transactions->fine->setStartDate($this->dias_multa);
-			$boleto->transactions->fine->setAmount($this->valor_multa);
-			$boleto->transactions->fine->setInterest($this->percentual_multa);
-		}
-
 		$res = $gateway->charge( $boleto );
 
 		$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
@@ -192,8 +168,10 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 					}
 					else {
 						$url = AditumPayments\ApiSDK\Configuration::PROD_URL;
-					}		
-					 $this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "Pedido realizado com sucesso <a style='background:#9c2671;color:#fff;font-size:9px;text-transform:uppercase;font-weight:bold;padding:5px 10px;border-radius:2px;' href='{$urlBoleto}' target='_blank'>clique aqui para pagar o boleto</a>", true);
+					}
+					 
+					$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_pix_order_status_id'), "Pedido realizado com sucesso", true);
+					
 					$json['success'] = true;
 					$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
 			}
@@ -203,7 +181,7 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 				$json['error'] = implode("\n", array_map(function($error){ return $error->message; }, $message->errors));
 			}
 			else {
-				$json['error'] = 'Houve uma falha ao finalizar a campo. Tente novamente.';
+				$json['error'] = 'Houve uma falha ao finalizar. Tente novamente.';
 			}
 		}
 		// $json = get_defined_vars();

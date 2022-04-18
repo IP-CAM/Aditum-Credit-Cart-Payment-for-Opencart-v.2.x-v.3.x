@@ -101,6 +101,8 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 
 		require DIR_SYSTEM . 'library/vendor/autoload.php';
 
+		$this->load->model('extension/payment/aditum');
+
 		$order = $data['order_info'];
 		
 		$amount = number_format($order['total'], 2, '', '');
@@ -199,6 +201,8 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 		$authorization->transactions->card->billingAddress->setComplement( $data['custom_fields'][$this->campo_complemento] );
 		
 		$res = $gateway->charge( $authorization );
+		
+		$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
 
 		if ( isset( $res['status'] ) ) {
 			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::AUTHORIZED === $res['status'] ) {
@@ -206,7 +210,7 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 				$this->load->model('checkout/order');
 				$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "Pedido realizado com sucesso.", true);
 				$json['success'] = true;
-				$json['redirect'] = $this->url->link('checkout/success');
+				$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
 			}
 			else {
 				if($res['charge']->transactions[0]->transactionStatus === "Denied") {
@@ -217,7 +221,7 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 					$this->load->model('checkout/order');
 					$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "O pagamento está sendo processado.", true);
 					$json['success'] = true;
-					$json['redirect'] = $this->url->link('checkout/success');
+					$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
 				}
 			}
 		} else {

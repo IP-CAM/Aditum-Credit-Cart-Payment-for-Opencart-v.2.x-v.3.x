@@ -61,7 +61,7 @@ print_r(json_encode($res));
 
 if (isset($res["status"])) {
     if ($res["status"] == AditumPayments\ApiSDK\Enum\ChargeStatus::PRE_AUTHORIZED) 
-        echo "\n\nPRÉ AUTORIZADO!\n";
+        echo "\n\nBOLETO!\n";
 } else {
     if ($res != NULL)
         echo "\nhttStatus: ".$res["httpStatus"]

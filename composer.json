@@ -1,0 +1,11 @@
+{
+    "require": {
+        "aditum-payments/aditum-api-sdk-php": "^2.11"
+    },
+    "config": {
+      "vendor-dir": "./upload/system/library/vendor/",
+      "allow-plugins": {
+        "composer/installers": true
+      }
+    }
+}

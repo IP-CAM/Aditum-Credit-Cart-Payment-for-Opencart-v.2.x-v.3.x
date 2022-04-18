@@ -1,42 +1,32 @@
-<?php return array (
-  'root' => 
-  array (
-    'pretty_version' => 'dev-main',
-    'version' => 'dev-main',
-    'aliases' => 
-    array (
+<?php return array(
+    'root' => array(
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../../../../',
+        'aliases' => array(),
+        'reference' => '5e1b3ec2175b1d197fb5a2231a54037196fd8af1',
+        'name' => '__root__',
+        'dev' => true,
     ),
-    'reference' => '79f02c3cf16e26a215f44504f964e7bedf961452',
-    'name' => '__root__',
-  ),
-  'versions' => 
-  array (
-    '__root__' => 
-    array (
-      'pretty_version' => 'dev-main',
-      'version' => 'dev-main',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '79f02c3cf16e26a215f44504f964e7bedf961452',
+    'versions' => array(
+        '__root__' => array(
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../../../../../',
+            'aliases' => array(),
+            'reference' => '5e1b3ec2175b1d197fb5a2231a54037196fd8af1',
+            'dev_requirement' => false,
+        ),
+        'aditum-payments/aditum-api-sdk-php' => array(
+            'pretty_version' => 'v2.11.0',
+            'version' => '2.11.0.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../aditum-payments/aditum-api-sdk-php',
+            'aliases' => array(),
+            'reference' => '2627eca5a73674a2c8cf6c9229ea5668fe44b708',
+            'dev_requirement' => false,
+        ),
     ),
-    'aditum-payments/aditum-api-sdk-php' => 
-    array (
-      'pretty_version' => 'v2.8.0',
-      'version' => '2.8.0.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => 'a54d796965a9c3da43413afe6e68850998ec4a4e',
-    ),
-    'picqer/php-barcode-generator' => 
-    array (
-      'pretty_version' => 'v2.2.0',
-      'version' => '2.2.0.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '7df93b40099e5fefad055543320a36b80dccda05',
-    ),
-  ),
 );
