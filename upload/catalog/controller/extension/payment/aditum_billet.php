@@ -195,7 +195,7 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 					}		
 					 $this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "Pedido realizado com sucesso <a style='background:#9c2671;color:#fff;font-size:9px;text-transform:uppercase;font-weight:bold;padding:5px 10px;border-radius:2px;' href='{$urlBoleto}' target='_blank'>clique aqui para pagar o boleto</a>", true);
 					$json['success'] = true;
-					$json['redirect'] = $this->url->link('checkout/success');
+					$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
 			}
 		} else {
 			$message = json_decode($res['httpMsg']);

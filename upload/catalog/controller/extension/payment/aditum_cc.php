@@ -210,7 +210,7 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 				$this->load->model('checkout/order');
 				$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "Pedido realizado com sucesso.", true);
 				$json['success'] = true;
-				$json['redirect'] = $this->url->link('checkout/success');
+				$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
 			}
 			else {
 				if($res['charge']->transactions[0]->transactionStatus === "Denied") {
@@ -221,7 +221,7 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 					$this->load->model('checkout/order');
 					$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "O pagamento está sendo processado.", true);
 					$json['success'] = true;
-					$json['redirect'] = $this->url->link('checkout/success');
+					$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
 				}
 			}
 		} else {
