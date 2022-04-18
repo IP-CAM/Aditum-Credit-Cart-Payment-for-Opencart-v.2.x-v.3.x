@@ -181,6 +181,8 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 
 		$res = $gateway->charge( $boleto );
 
+		$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
+
 		if ( isset( $res['status'] ) ) {
 			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::PRE_AUTHORIZED === $res['status'] ) {
 				 $this->load->model('checkout/order');
