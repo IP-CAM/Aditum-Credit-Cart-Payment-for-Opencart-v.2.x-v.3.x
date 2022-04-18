@@ -92,10 +92,19 @@
       </search>
       <add position="after">
         <![CDATA[
-        if(isset($this->session->data['url_boleto'])):
-          $data['url_boleto'] = $this->session->data['url_boleto'];
-          $data['linha_digitavel'] = $this->session->data['linha_digitavel'];
-        endif;
+        if(isset($_GET['order_id'])){
+          $this->load->model('extension/payment/aditum');
+          $aditum_data = json_decode($this->model_extension_payment_aditum->get_data($this->session->data['order_id']));
+          if(isset($aditum_data->charge->transactions[0]->qrCode)) {
+            $data['qrCode'] = $aditum_data->charge->transactions[0]->qrCode;
+            $data['qrCodeBase64'] = $aditum_data->charge->transactions[0]->qrCodeBase64;
+          }
+          if(isset($aditum_data->charge->transactions[0]->bankSlipUrl)) {
+            $urlBoleto = str_replace('/v2/', '', $url) . "{$aditum_data->charge->transactions[0]->bankSlipUrl}";
+            $data['url_boleto'] = $urlBoleto;
+            $data['linha_digitavel'] = $aditum_data->charge->transactions[0]->digitalLine;
+          }
+        }
         ]]>
       </add>
     </operation>
