@@ -95,6 +95,8 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 
 		require DIR_SYSTEM . 'library/vendor/autoload.php';
 
+		$this->load->model('extension/payment/aditum');
+
 		$order = $data['order_info'];
 		
 		$amount = number_format($order['total'], 2, '', '');
