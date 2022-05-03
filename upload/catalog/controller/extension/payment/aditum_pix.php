@@ -87,7 +87,7 @@ class ControllerExtensionPaymentAditumPix extends Controller {
 
 		$this->load->model('extension/payment/aditum');
 
-		$order = $data['order_info'];
+		$order = $data['order_info'];	
 		
 		$amount = number_format($order['total'], 2, '', '');
 
@@ -113,6 +113,19 @@ class ControllerExtensionPaymentAditumPix extends Controller {
 
 		$gateway = new AditumPayments\ApiSDK\Gateway();
 		$boleto  = new AditumPayments\ApiSDK\Domains\Pix();
+
+        
+		$items = $this->cart->getProducts();
+		$this->load->model('catalog/product');		
+		foreach($items as $item) {
+			$product_info = $this->model_catalog_product->getProduct($item['product_id']);
+			$pix->products->add(
+				$item['name'], 
+				$product_info['sku'],
+				str_replace('.', '', number_format($item['price'], 2)),
+				$item['quantity']
+			);
+		}
 
 		$boleto->setMerchantChargeId($order['order_id']);
 
