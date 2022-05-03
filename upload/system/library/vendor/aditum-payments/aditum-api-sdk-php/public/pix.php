@@ -14,6 +14,11 @@ $pix = new AditumPayments\ApiSDK\Domains\Pix;
 
 $pix->setMerchantChargeId("");
 
+// Products = Nome, SKU, Valor, Quantidade
+$pix->products->add("Jackson 2", "32424242", 1001, 1);
+$pix->products->add("Jackson 3", "32424242", 1002, 2);
+$pix->products->add("Jackson 4", "32424242", 1003, 3);
+
 // Customer
 $pix->customer->setId("00002");
 $pix->customer->setName("fulano");
