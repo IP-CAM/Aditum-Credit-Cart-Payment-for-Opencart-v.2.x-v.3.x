@@ -15,6 +15,11 @@ $preAuthorization = new AditumPayments\ApiSDK\Domains\PreAuthorization;
 $preAuthorization->setMerchantChargeId("");
 $preAuthorization->setSessionId("");
 
+// Products = Nome, SKU, Valor, Quantidade
+$preAuthorization->products->add("Jackson 2", "32424242", 1001, 1);
+$preAuthorization->products->add("Jackson 3", "32424242", 1002, 2);
+$preAuthorization->products->add("Jackson 4", "32424242", 1003, 3);
+
 // Customer
 $preAuthorization->customer->setName("fulano");
 $preAuthorization->customer->setEmail("fulano@aditum.co");
@@ -49,7 +54,7 @@ $preAuthorization->transactions->card->setCardNumber("4444333322221111"); // Apr
 // $preAuthorization->transactions->card->setCardNumber("4222222222222225"); // Pendente e negar posteriormente
 // $preAuthorization->transactions->card->setCardNumber("4444333322221112"); // Negar
 
-$authorization->transactions->card->setCardholderDocument("14533859755");
+$preAuthorization->transactions->card->setCardholderDocument("14533859755");
 $preAuthorization->transactions->card->setCVV("879");
 $preAuthorization->transactions->card->setCardholderName("CERES ROHANA");
 $preAuthorization->transactions->card->setExpirationMonth(10);

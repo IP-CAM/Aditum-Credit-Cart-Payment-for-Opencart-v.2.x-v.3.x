@@ -124,6 +124,18 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 		$gateway = new AditumPayments\ApiSDK\Gateway();
 		$boleto  = new AditumPayments\ApiSDK\Domains\Boleto();
 
+		$items = $this->cart->getProducts();
+		$this->load->model('catalog/product');		
+		foreach($items as $item) {
+			$product_info = $this->model_catalog_product->getProduct($item['product_id']);
+			$boleto->products->add(
+				$item['name'], 
+				$product_info['sku'],
+				str_replace('.', '', number_format($item['price'], 2)),
+				$item['quantity']
+			);
+		}
+
 		$deadline = $this->expiracao;
 
 		$boleto->setDeadline( $deadline );

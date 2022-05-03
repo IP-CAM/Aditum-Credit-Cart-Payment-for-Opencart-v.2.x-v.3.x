@@ -7,12 +7,14 @@ class Authorization extends Charge {
     public const CHARGE_TYPE = "Authorization";
 
     public function __construct() {
+        $this->products = new Products;
         $this->customer = new Customer;
         $this->transactions = new Transactions;
     }
 
     public function toString() {
         return array("charge" => array(
+                "products" => $this->products->toString(),
                 "customer" => array(
                     "name" => $this->customer->getName(),
                     "email" => $this->customer->getEmail(),
