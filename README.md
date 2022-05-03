@@ -21,7 +21,7 @@
 
 ### **PASSO 1**
 
-Baixe a última versão do plugin em https://github.com/aditum-payments/aditum-opencart/releases
+Baixe a última versão do plugin em formato ZIP acessando https://github.com/aditum-payments/aditum-opencart/releases
 
 ### **PASSO 2**
 
