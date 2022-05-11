@@ -94,7 +94,7 @@
         <![CDATA[
         if(isset($_GET['order_id'])){
           $this->load->model('extension/payment/aditum');
-          $aditum_data = json_decode($this->model_extension_payment_aditum->get_data($this->session->data['order_id']));
+          $aditum_data = json_decode($this->model_extension_payment_aditum->get_data($_GET['order_id']));
           if(isset($aditum_data->charge->transactions[0]->qrCode)) {
             $data['qrCode'] = $aditum_data->charge->transactions[0]->qrCode;
             $data['qrCodeBase64'] = $aditum_data->charge->transactions[0]->qrCodeBase64;
