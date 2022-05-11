@@ -214,10 +214,10 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 		
 		$res = $gateway->charge( $authorization );
 		
-		$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
-
+		
 		if ( isset( $res['status'] ) ) {
 			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::AUTHORIZED === $res['status'] ) {
+				$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
 				$checkout = true;
 				$this->load->model('checkout/order');
 				$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "Pedido realizado com sucesso.", true);

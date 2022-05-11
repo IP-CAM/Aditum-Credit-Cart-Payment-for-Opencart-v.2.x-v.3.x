@@ -170,23 +170,23 @@ class ControllerExtensionPaymentAditumPix extends Controller {
 		$pix->transactions->setAmount( $amount );
 		$res = $gateway->charge( $pix );
 
-		$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
 
 		if ( isset( $res['status'] ) ) {
 			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::PRE_AUTHORIZED === $res['status'] ) {
-				 $this->load->model('checkout/order');
-				 $checkout = true;
-					if ( 'sandbox' == $this->environment ) {
-						$url = AditumPayments\ApiSDK\Configuration::DEV_URL;
-					}
-					else {
-						$url = AditumPayments\ApiSDK\Configuration::PROD_URL;
-					}
-					 
-					$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_pix_order_status_id'), "Pedido realizado com sucesso", true);
+				$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
+				$this->load->model('checkout/order');
+				$checkout = true;
+				if ( 'sandbox' == $this->environment ) {
+					$url = AditumPayments\ApiSDK\Configuration::DEV_URL;
+				}
+				else {
+					$url = AditumPayments\ApiSDK\Configuration::PROD_URL;
+				}
 					
-					$json['success'] = true;
-					$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
+				$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_pix_order_status_id'), "Pedido realizado com sucesso", true);
+				
+				$json['success'] = true;
+				$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
 			}
 		} else {
 			$message = json_decode($res['httpMsg']);
