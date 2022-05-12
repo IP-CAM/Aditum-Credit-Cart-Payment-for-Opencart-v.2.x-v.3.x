@@ -183,6 +183,12 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 			$data['payment_aditum_billet_token_antifraude'] = $this->config->get('payment_aditum_billet_token_antifraude');
 		}
 
+		if (isset($this->request->post['payment_aditum_billet_debug'])) {
+			$data['payment_aditum_billet_debug'] = $this->request->post['payment_aditum_billet_debug'];
+		} else {
+			$data['payment_aditum_billet_debug'] = $this->config->get('payment_aditum_billet_debug');
+		}
+
 		$data['header'] = $this->load->controller('common/header');
 		$data['column_left'] = $this->load->controller('common/column_left');
 		$data['footer'] = $this->load->controller('common/footer');

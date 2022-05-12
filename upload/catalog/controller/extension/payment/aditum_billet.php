@@ -45,6 +45,7 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 		$this->campo_bairro = $this->config->get('payment_aditum_billet_campo_bairro');
 		$this->tipo_antifraude = $this->config->get('payment_aditum_billet_tipo_antifraude');
 		$this->token_antifraude = $this->config->get('payment_aditum_billet_token_antifraude');
+		$this->debug = $this->config->get('payment_aditum_billet_debug');
 	}
 
 	public function index() {
@@ -193,9 +194,12 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 
 		$res = $gateway->charge( $boleto );
 
-		
+		$json = [];
 		if ( isset( $res['status'] ) ) {
-			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::PRE_AUTHORIZED === $res['status'] ) {
+			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::NOT_AUTHORIZED === $res['status'] ) {
+				$json['error'] = 'Transação não autorizada.';
+			}
+			else if ( AditumPayments\ApiSDK\Enum\ChargeStatus::PRE_AUTHORIZED === $res['status'] ) {
 				$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
 				 $this->load->model('checkout/order');
 				 $checkout = true;
@@ -205,6 +209,7 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 					else {
 						$url = AditumPayments\ApiSDK\Configuration::PROD_URL;
 					}		
+					$urlBoleto = str_replace('/v2/', '', $url) . "{$res['charge']['transactions'][0]['bankSlipUrl']}";
 					 $this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "Pedido realizado com sucesso <a style='background:#9c2671;color:#fff;font-size:9px;text-transform:uppercase;font-weight:bold;padding:5px 10px;border-radius:2px;' href='{$urlBoleto}' target='_blank'>clique aqui para pagar o boleto</a>", true);
 					$json['success'] = true;
 					$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
@@ -219,6 +224,9 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 			}
 		}
 		// $json = get_defined_vars();
+		if(isset($json['error']) && $this->debug == 'yes') {
+			$json['error'] = json_encode($res);
+		}
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));	
 	}
