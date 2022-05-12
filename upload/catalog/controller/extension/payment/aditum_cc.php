@@ -39,6 +39,7 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 		$this->campo_bairro = $this->config->get('payment_aditum_cc_campo_bairro');
 		$this->tipo_antifraude = $this->config->get('payment_aditum_cc_tipo_antifraude');
 		$this->token_antifraude = $this->config->get('payment_aditum_cc_token_antifraude');
+		$this->debug = $this->config->get('payment_aditum_cc_debug');
 	}
 
 	public function index() {
@@ -214,9 +215,12 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 		
 		$res = $gateway->charge( $authorization );
 		
-		
+		$json = [];
 		if ( isset( $res['status'] ) ) {
-			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::AUTHORIZED === $res['status'] ) {
+			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::NOT_AUTHORIZED === $res['status'] ) {
+				$json['error'] = 'Transação não autorizada.';
+			}
+			else if ( AditumPayments\ApiSDK\Enum\ChargeStatus::AUTHORIZED === $res['status'] ) {
 				$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
 				$checkout = true;
 				$this->load->model('checkout/order');
@@ -244,6 +248,9 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 			else {
 				$json['error'] = 'Houve uma falha ao finalizar a campo. Tente novamente.';
 			}
+		}
+		if(isset($json['error']) && $this->debug == 'yes') {
+			$json['error'] = json_encode($res);
 		}
 		// $json = get_defined_vars();
 		$this->response->addHeader('Content-Type: application/json');
