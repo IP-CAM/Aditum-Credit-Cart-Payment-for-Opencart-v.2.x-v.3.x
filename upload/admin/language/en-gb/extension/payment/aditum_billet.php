@@ -37,3 +37,4 @@ $_['aditum_billet_expiracao'] = 'Tempo de expiração do boleto (Dias):';
 $_['aditum_billet_dias_multa'] = 'Dias para multa:';
 $_['aditum_billet_valor_multa'] = 'Valor fixo da multa:';
 $_['aditum_billet_percentual_multa'] = 'Valor percentual da multa:';
+$_['aditum_billet_debug'] = 'Habilitar debug';

@@ -120,7 +120,7 @@
             <div class="col-sm-10">
               <select name="payment_aditum_cc_tipo_antifraude" value="{{ payment_aditum_cc_tipo_antifraude }}" id="input-aditum_cc_tipo_antifraude" class="form-control">
                 <option value="clearsale">Clear Sale</option>
-                <option value="konduto" {% if payment_aditum_cc_tipo_antifraude == 'konduto' %}checked{% endif %}>Konduto</option>
+                <option value="konduto" {% if payment_aditum_cc_tipo_antifraude == 'konduto' %}selected{% endif %}>Konduto</option>
                 </select>
             </div>
           </div>
@@ -128,6 +128,15 @@
             <label class="col-sm-2 control-label" for="input-aditum_cc_token_antifraude"><span data-toggle="tooltip" title="{{ help_aditum_cc_token_antifraude }}">{{ aditum_cc_token_antifraude }}</span></label>
             <div class="col-sm-10">
               <input type="text" name="payment_aditum_cc_token_antifraude" value="{{ payment_aditum_cc_token_antifraude }}" placeholder="{{ entry_aditum_cc_token_antifraude }}" id="input-aditum_cc_token_antifraude" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_cc_debug"><span data-toggle="tooltip" title="{{ help_aditum_cc_debug }}">{{ aditum_cc_debug }}</span></label>
+            <div class="col-sm-10">
+              <select name="payment_aditum_cc_debug" value="{{ payment_aditum_cc_debug }}" id="input-aditum_cc_debug" class="form-control">
+                <option value="no">Não</option>
+                <option value="yes" {% if payment_aditum_cc_debug %}selected{% endif %}>Sim</option>
+                </select>
             </div>
           </div>
           <div class="form-group">
