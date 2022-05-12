@@ -31,4 +31,4 @@ $_['aditum_pix_campo_numero'] = 'Campo Número da Rua';
 $_['aditum_pix_campo_complemento'] = 'Campo Complemento';
 $_['aditum_pix_tipo_antifraude'] = 'Tipo de Antifraude';
 $_['aditum_pix_token_antifraude'] = 'Token';
-$_['aditum_cc_debug'] = 'Habilitar debug';
+$_['aditum_pix_debug'] = 'Habilitar debug';
