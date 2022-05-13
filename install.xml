@@ -100,6 +100,14 @@
             $data['qrCodeBase64'] = $aditum_data->charge->transactions[0]->qrCodeBase64;
           }
           if(isset($aditum_data->charge->transactions[0]->bankSlipUrl)) {
+			      require DIR_SYSTEM . 'library/vendor/autoload.php';
+            $environment = $this->config->get('payment_aditum_billet_modo');
+            if ( 'sandbox' == $environment ) {
+              $url = AditumPayments\ApiSDK\Configuration::DEV_URL;
+            }
+            else {
+              $url = AditumPayments\ApiSDK\Configuration::PROD_URL;
+            }
             $urlBoleto = str_replace('/v2/', '', $url) . "{$aditum_data->charge->transactions[0]->bankSlipUrl}";
             $data['url_boleto'] = $urlBoleto;
             $data['linha_digitavel'] = $aditum_data->charge->transactions[0]->digitalLine;
