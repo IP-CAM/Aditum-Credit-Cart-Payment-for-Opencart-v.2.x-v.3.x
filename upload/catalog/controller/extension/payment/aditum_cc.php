@@ -293,7 +293,7 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 
 	public function card_brand() {
 		$this->init_config();
-		require DIR_SYSTEM . '../vendor/autoload.php';
+		require DIR_SYSTEM . 'library/vendor/autoload.php';
 		AditumPayments\ApiSDK\Configuration::initialize();
 		if ( 'sandbox' === $this->environment ) {
 			AditumPayments\ApiSDK\Configuration::setUrl( AditumPayments\ApiSDK\Configuration::DEV_URL );
