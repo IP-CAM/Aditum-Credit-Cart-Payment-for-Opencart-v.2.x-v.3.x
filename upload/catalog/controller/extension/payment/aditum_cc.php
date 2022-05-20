@@ -218,7 +218,7 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 		$json = [];
 		if ( isset( $res['status'] ) ) {
 			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::NOT_AUTHORIZED === $res['status'] ) {
-				$json['error'] = 'Transação não autorizada.';
+				$json['error'] = $this->debug == 'yes' ? json_encode($res) : 'Transação não autorizada.';
 			}
 			else if ( AditumPayments\ApiSDK\Enum\ChargeStatus::AUTHORIZED === $res['status'] ) {
 				$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
@@ -230,7 +230,7 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 			}
 			else {
 				if($res['charge']->transactions[0]->transactionStatus === "Denied") {
-					$json['error'] = 'Transação negada pela operadora do cartão.';
+					$json['error'] = $this->debug == 'yes' ? json_encode($res) : 'Transação negada pela operadora do cartão.';
 					$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), 'Transação negada pela operadora do cartão.', true);
 				} 
 				else if($res['charge']->transactions[0]->transactionStatus === "PreAuthorized"){
