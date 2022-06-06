@@ -155,9 +155,9 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 
 		$campo_documento = $this->campo_documento;
 
-		$count = strlen( $data['custom_fields'][$this->campo_documento] ) ;
+		$documento = preg_replace( '/[^\d]+/i', '', $data['custom_fields'][$this->campo_documento] );
 
-		if ( strlen( $data['custom_fields'][$this->campo_documento] ) > 11 ) 
+		if ( strlen( $documento ) > 11 ) 
 		{
 			$authorization->customer->setDocumentType( AditumPayments\ApiSDK\Enum\DocumentType::CNPJ );
 		} 
@@ -166,7 +166,6 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 			$authorization->customer->setDocumentType( AditumPayments\ApiSDK\Enum\DocumentType::CPF );
 		}
 
-		$documento = preg_replace( '/[^\d]+/i', '', $data['custom_fields'][$this->campo_documento] );
 		$authorization->customer->setDocument( $documento );
 
 		// ! Customer->address
