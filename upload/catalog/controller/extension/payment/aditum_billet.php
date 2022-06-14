@@ -45,6 +45,7 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 		$this->campo_bairro = $this->config->get('payment_aditum_billet_campo_bairro');
 		$this->tipo_antifraude = $this->config->get('payment_aditum_billet_tipo_antifraude');
 		$this->token_antifraude = $this->config->get('payment_aditum_billet_token_antifraude');
+		$this->debug = $this->config->get('payment_aditum_billet_debug');
 	}
 
 	public function index() {
@@ -124,6 +125,18 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 		$gateway = new AditumPayments\ApiSDK\Gateway();
 		$boleto  = new AditumPayments\ApiSDK\Domains\Boleto();
 
+		$items = $this->cart->getProducts();
+		$this->load->model('catalog/product');		
+		foreach($items as $item) {
+			$product_info = $this->model_catalog_product->getProduct($item['product_id']);
+			$boleto->products->add(
+				$item['name'], 
+				$product_info['sku'],
+				str_replace('.', '', number_format($item['price'], 2)),
+				$item['quantity']
+			);
+		}
+
 		$deadline = $this->expiracao;
 
 		$boleto->setDeadline( $deadline );
@@ -137,9 +150,9 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 
 		$campo_documento = $this->campo_documento;
 
-		$count = strlen( $data['custom_fields'][$this->campo_documento] ) ;
+		$documento = preg_replace( '/[^\d]+/i', '', $data['custom_fields'][$this->campo_documento] );
 
-		if ( strlen( $data['custom_fields'][$this->campo_documento] ) > 11 ) 
+		if ( strlen( $documento ) > 11 ) 
 		{
 			$boleto->customer->setDocumentType( AditumPayments\ApiSDK\Enum\DocumentType::CNPJ );
 		} 
@@ -148,7 +161,6 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 			$boleto->customer->setDocumentType( AditumPayments\ApiSDK\Enum\DocumentType::CPF );
 		}
 
-		$documento = preg_replace( '/[^\d]+/i', '', $data['custom_fields'][$this->campo_documento] );
 		$boleto->customer->setDocument( $documento );
 
 		// ! Customer->address
@@ -181,21 +193,25 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 
 		$res = $gateway->charge( $boleto );
 
-		$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
-
+		$json = [];
 		if ( isset( $res['status'] ) ) {
-			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::PRE_AUTHORIZED === $res['status'] ) {
-				 $this->load->model('checkout/order');
-				 $checkout = true;
-					if ( 'sandbox' == $this->environment ) {
-						$url = AditumPayments\ApiSDK\Configuration::DEV_URL;
-					}
-					else {
-						$url = AditumPayments\ApiSDK\Configuration::PROD_URL;
-					}		
-					 $this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "Pedido realizado com sucesso <a style='background:#9c2671;color:#fff;font-size:9px;text-transform:uppercase;font-weight:bold;padding:5px 10px;border-radius:2px;' href='{$urlBoleto}' target='_blank'>clique aqui para pagar o boleto</a>", true);
-					$json['success'] = true;
-					$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
+			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::NOT_AUTHORIZED === $res['status'] ) {
+				$json['error'] = 'Transação não autorizada.';
+			}
+			else if ( AditumPayments\ApiSDK\Enum\ChargeStatus::PRE_AUTHORIZED === $res['status'] ) {
+				$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
+				$this->load->model('checkout/order');
+				$checkout = true;
+				if ( 'sandbox' == $this->environment ) {
+					$url = AditumPayments\ApiSDK\Configuration::DEV_URL;
+				}
+				else {
+					$url = AditumPayments\ApiSDK\Configuration::PROD_URL;
+				}		
+				$urlBoleto = str_replace('/v2/', '', $url) . "{$res['charge']->transactions[0]->bankSlipUrl}";
+				$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "Pedido realizado com sucesso <a style='background:#9c2671;color:#fff;font-size:9px;text-transform:uppercase;font-weight:bold;padding:5px 10px;border-radius:2px;' href='{$urlBoleto}' target='_blank'>clique aqui para pagar o boleto</a>", true);
+				$json['success'] = true;
+				$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
 			}
 		} else {
 			$message = json_decode($res['httpMsg']);
@@ -207,6 +223,9 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 			}
 		}
 		// $json = get_defined_vars();
+		if(isset($json['error']) && $this->debug == 'yes') {
+			$json['error'] = json_encode($res);
+		}
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));	
 	}

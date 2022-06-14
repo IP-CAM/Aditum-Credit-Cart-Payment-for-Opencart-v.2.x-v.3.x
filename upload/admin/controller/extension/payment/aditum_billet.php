@@ -117,28 +117,28 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 			$data['payment_aditum_billet_instrucoes'] = $this->config->get('payment_aditum_billet_instrucoes');
 		}
 
-		if (isset($this->request->post['aditum_billet_expiracao'])) {
-			$data['payment_aditum_billet_expiracao'] = $this->request->post['aditum_billet_expiracao'];
+		if (isset($this->request->post['payment_aditum_billet_expiracao'])) {
+			$data['payment_aditum_billet_expiracao'] = $this->request->post['payment_aditum_billet_expiracao'];
 		} else {
-			$data['payment_aditum_billet_expiracao'] = ($c=$this->config->get('aditum_billet_expiracao')) ? $c : 5;
+			$data['payment_aditum_billet_expiracao'] = ($c=$this->config->get('payment_aditum_billet_expiracao')) ? $c : 5;
 		}
 
-		if (isset($this->request->post['aditum_billet_dias_multa'])) {
-			$data['payment_aditum_billet_dias_multa'] = $this->request->post['aditum_billet_dias_multa'];
+		if (isset($this->request->post['payment_aditum_billet_dias_multa'])) {
+			$data['payment_aditum_billet_dias_multa'] = $this->request->post['payment_aditum_billet_dias_multa'];
 		} else {
-			$data['payment_aditum_billet_dias_multa'] = $this->config->get('aditum_billet_dias_multa');
+			$data['payment_aditum_billet_dias_multa'] = $this->config->get('payment_aditum_billet_dias_multa');
 		}
 
-		if (isset($this->request->post['aditum_billet_valor_multa'])) {
-			$data['payment_aditum_billet_valor_multa'] = $this->request->post['aditum_billet_valor_multa'];
+		if (isset($this->request->post['payment_aditum_billet_valor_multa'])) {
+			$data['payment_aditum_billet_valor_multa'] = $this->request->post['payment_aditum_billet_valor_multa'];
 		} else {
-			$data['payment_aditum_billet_valor_multa'] = $this->config->get('aditum_billet_valor_multa');
+			$data['payment_aditum_billet_valor_multa'] = $this->config->get('payment_aditum_billet_valor_multa');
 		}
 
-		if (isset($this->request->post['aditum_billet_percentual_multa'])) {
-			$data['payment_aditum_billet_percentual_multa'] = $this->request->post['aditum_billet_percentual_multa'];
+		if (isset($this->request->post['payment_aditum_billet_percentual_multa'])) {
+			$data['payment_aditum_billet_percentual_multa'] = $this->request->post['payment_aditum_billet_percentual_multa'];
 		} else {
-			$data['payment_aditum_billet_percentual_multa'] = $this->config->get('aditum_billet_percentual_multa');
+			$data['payment_aditum_billet_percentual_multa'] = $this->config->get('payment_aditum_billet_percentual_multa');
 		}
 
 		if (isset($this->request->post['payment_aditum_billet_cnpj'])) {
@@ -181,6 +181,12 @@ class ControllerExtensionPaymentAditumBillet extends Controller {
 			$data['payment_aditum_billet_token_antifraude'] = $this->request->post['payment_aditum_billet_token_antifraude'];
 		} else {
 			$data['payment_aditum_billet_token_antifraude'] = $this->config->get('payment_aditum_billet_token_antifraude');
+		}
+
+		if (isset($this->request->post['payment_aditum_billet_debug'])) {
+			$data['payment_aditum_billet_debug'] = $this->request->post['payment_aditum_billet_debug'];
+		} else {
+			$data['payment_aditum_billet_debug'] = $this->config->get('payment_aditum_billet_debug');
 		}
 
 		$data['header'] = $this->load->controller('common/header');

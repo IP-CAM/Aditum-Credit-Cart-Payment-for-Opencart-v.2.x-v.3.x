@@ -136,7 +136,7 @@
             <div class="col-sm-10">
               <select name="payment_aditum_billet_tipo_antifraude" value="{{ payment_aditum_billet_tipo_antifraude }}" id="input-aditum_billet_tipo_antifraude" class="form-control">
                 <option value="clearsale">Clear Sale</option>
-                <option value="konduto" {% if payment_aditum_billet_tipo_antifraude == 'konduto' %}checked{% endif %}>Konduto</option>
+                <option value="konduto" {% if payment_aditum_billet_tipo_antifraude == 'konduto' %}selected{% endif %}>Konduto</option>
                 </select>
             </div>
           </div>
@@ -147,12 +147,21 @@
             </div>
           </div>
           <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-aditum_billet_debug"><span data-toggle="tooltip" title="{{ help_aditum_billet_debug }}">{{ aditum_billet_debug }}</span></label>
+            <div class="col-sm-10">
+              <select name="payment_aditum_billet_debug" value="{{ payment_aditum_billet_debug }}" id="input-aditum_billet_debug" class="form-control">
+                <option value="no">Não</option>
+                <option value="yes" {% if payment_aditum_billet_debug %}selected{% endif %}>Sim</option>
+                </select>
+            </div>
+          </div>
+          <div class="form-group">
             <label class="col-sm-2 control-label" for="input-order-status">{{ entry_order_status }}</label>
             <div class="col-sm-10">
               <select name="payment_aditum_billet_order_status_id" id="input-order-status" class="form-control">
                 {% for order_status in order_statuses %}
                 {% if order_status.order_status_id == payment_aditum_billet_order_status_id %}
-                <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                <option value="{{ order_status.order_status_id == 'yes' }}" selected="selected">{{ order_status.name }}</option>
                 {% else %}
                 <option value="{{ order_status.order_status_id }}">{{ order_status.name }}</option>
                 {% endif %}

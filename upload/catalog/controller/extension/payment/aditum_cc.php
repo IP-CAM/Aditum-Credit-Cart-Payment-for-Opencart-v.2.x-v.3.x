@@ -39,6 +39,7 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 		$this->campo_bairro = $this->config->get('payment_aditum_cc_campo_bairro');
 		$this->tipo_antifraude = $this->config->get('payment_aditum_cc_tipo_antifraude');
 		$this->token_antifraude = $this->config->get('payment_aditum_cc_token_antifraude');
+		$this->debug = $this->config->get('payment_aditum_cc_debug');
 	}
 
 	public function index() {
@@ -56,14 +57,6 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 	}
 
 	public function confirm() {
-		if ( empty( $_REQUEST['aditum_card_installment'] ) ) {
-			$this->response->addHeader('Content-Type: application/json');
-			return $this->response->setOutput(json_encode(['error' => 'Selecione a <strong>Quantidade de parcelas</strong>']));	
-		}
-		if ( empty( $_REQUEST['aditum_checkbox'] ) ) {
-			$this->response->addHeader('Content-Type: application/json');
-			return $this->response->setOutput(json_encode(['error' => 'Aceite os TERMOS & CONDIÇÕES para continuar']));	
-		}
 		$this->init_config();
 		$json = array();
 		$this->load->model('checkout/order');
@@ -99,138 +92,196 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 
 	private function createTransaction($data) {
 
-		require DIR_SYSTEM . 'library/vendor/autoload.php';
+		$json = [];
 
-		$this->load->model('extension/payment/aditum');
-
-		$order = $data['order_info'];
+		if ( empty( $_REQUEST['aditum_checkbox'] ) ) {
+			$json['error'] = 'Aceite os TERMOS & CONDIÇÕES para continuar';	
+		}
 		
-		$amount = number_format($order['total'], 2, '', '');
-
-		AditumPayments\ApiSDK\Configuration::initialize();
-
-		$environment = $this->environment;
-
-		if ( 'sandbox' == $this->environment ) {
-			AditumPayments\ApiSDK\Configuration::setUrl( AditumPayments\ApiSDK\Configuration::DEV_URL );
+		if ( empty( $_REQUEST['aditum_card_installment'] ) ) {
+			$json['error'] = 'Selecione a <strong>Quantidade de parcelas</strong>';	
+		}
+		
+		$aditum_card_cvv = preg_replace('/[^\d]+/', '', $_POST['aditum_card_cvv']);
+		if(empty($aditum_card_cvv) || strlen($aditum_card_cvv) > 4) {
+			$json['error'] = 'CVV inválido';
 		}
 
-		$config = get_object_vars($this);
-
-		AditumPayments\ApiSDK\Configuration::setCnpj( $this->merchant_cnpj );
-		AditumPayments\ApiSDK\Configuration::setMerchantToken( $this->merchant_token );
-		AditumPayments\ApiSDK\Configuration::setlog( false );
-		$login = AditumPayments\ApiSDK\Configuration::login();
-
-		$telephone = preg_replace('/[^\d]+/i', '', $order['telephone']);
-
-		$customer_phone_area_code = substr( $telephone, 0, 2 );
-		$customer_phone           = substr( $telephone, 2 );
-
-		$gateway = new AditumPayments\ApiSDK\Gateway();
-		$authorization  = new AditumPayments\ApiSDK\Domains\Authorization();
-
-		$deadline = $this->expiracao;
-
-		$authorization->setSessionId($_REQUEST['antifraud_token']);
-		$authorization->setMerchantChargeId($order['order_id']);
-
-		// ! Customer
-		$authorization->customer->setId( $order['order_id'] );
-		$authorization->customer->setName( $order['payment_firstname'] . ' ' . $order['payment_lastname'] );
-		$authorization->customer->setEmail( $order['email'] );
-
-		$campo_documento = $this->campo_documento;
-
-		$count = strlen( $data['custom_fields'][$this->campo_documento] ) ;
-
-		if ( strlen( $data['custom_fields'][$this->campo_documento] ) > 11 ) 
-		{
-			$authorization->customer->setDocumentType( AditumPayments\ApiSDK\Enum\DocumentType::CNPJ );
-		} 
-		else 
-		{
-			$authorization->customer->setDocumentType( AditumPayments\ApiSDK\Enum\DocumentType::CPF );
+		$aditum_card_expiration_year = preg_replace('/[^\d]+/', '', $_POST['aditum_card_expiration_year']);
+		if(empty($aditum_card_expiration_year) || strlen($aditum_card_expiration_year) != 2 || $aditum_card_expiration_year < date('y')) {
+			$json['error'] = 'Ano de vencimento do cartão inválido';
+		}
+		
+		$aditum_card_expiration_month = preg_replace('/[^\d]+/', '', $_POST['aditum_card_expiration_month']);
+		if(empty($aditum_card_expiration_month) || strlen($aditum_card_expiration_month) != 2 || $aditum_card_expiration_month < 1 || $aditum_card_expiration_month > 12) {
+			$json['error'] = 'Mês de vencimento do cartão inválido';
 		}
 
-		$documento = preg_replace( '/[^\d]+/i', '', $data['custom_fields'][$this->campo_documento] );
-		$authorization->customer->setDocument( $documento );
-
-		// ! Customer->address
-		$authorization->customer->address->setStreet( $order['payment_address_1'] );
-		$authorization->customer->address->setNumber( $data['custom_fields'][$this->campo_numero] );
-		$authorization->customer->address->setNeighborhood( $order['payment_address_2'] );
-		$authorization->customer->address->setCity( $order['payment_city'] );
-		$authorization->customer->address->setState( $order['payment_zone_code'] );
-		$authorization->customer->address->setCountry( $order['payment_iso_code_2'] );
-		$authorization->customer->address->setZipcode( $order['payment_postcode'] );
-		$authorization->customer->address->setComplement( $data['custom_fields'][$this->campo_complemento] );
-
-		// ! Customer->phone
-		$authorization->customer->phone->setCountryCode( '55' );
-		$authorization->customer->phone->setAreaCode( $customer_phone_area_code );
-		$authorization->customer->phone->setNumber( $customer_phone );
-		$authorization->customer->phone->setType( AditumPayments\ApiSDK\Enum\PhoneType::MOBILE );
-
-		// ! Transactions
-		$authorization->transactions->setAmount( $amount );
-		$authorization->transactions->setPaymentType( AditumPayments\ApiSDK\Enum\PaymentType::CREDIT );
-		$authorization->transactions->setInstallmentNumber( isset($_POST['aditum_card_installment']) ? $_POST['aditum_card_installment'] : 1 ); // Só pode ser maior que 1 se o tipo de transação for crédito.
-		
-		if($_POST['aditum_card_installment']>1) {
-			$authorization->transactions->setInstallmentType(AditumPayments\ApiSDK\Enum\InstallmentType::MERCHANT);
+		$aditum_card_number = preg_replace('/[^\d]+/', '', $_POST['aditum_card_number']);
+		if(empty($aditum_card_number)) {
+			$json['error'] = 'Número do cartão inválido';
 		}
-		else {
-			$authorization->transactions->setInstallmentType(AditumPayments\ApiSDK\Enum\InstallmentType::NONE);
+		
+		$card_holder_document = preg_replace('/[^\d]+/', '', $_POST['card_holder_document']);
+		if(!$this->validaCPF($card_holder_document)) {
+			$json['error'] = 'CPF inválido';
 		}
 
-		$authorization->transactions->card->setCardNumber( preg_replace( '/[^\d]+/', '', $_POST['aditum_card_number'] ) );
-		$authorization->transactions->card->setCVV( $_POST['aditum_card_cvv'] );
-		$authorization->transactions->card->setCardHolderName( $_POST['card_holder_name'] );
-		$authorization->transactions->card->setCardHolderDocument( $_POST['card_holder_document'] );
-		$authorization->transactions->card->setExpirationMonth( $_POST['aditum_card_expiration_month'] );
-		$authorization->transactions->card->setExpirationYear( 20 . $_POST['aditum_card_expiration_year'] );
-		
-		$authorization->transactions->card->billingAddress->setStreet( $order['payment_address_1'] );
-		$authorization->transactions->card->billingAddress->setNumber( $data['custom_fields'][$this->campo_numero] );
-		$authorization->transactions->card->billingAddress->setNeighborhood($order['payment_address_2']);
-		$authorization->transactions->card->billingAddress->setCity($order['payment_city']);
-		$authorization->transactions->card->billingAddress->setState($order['payment_zone_code']);
-		$authorization->transactions->card->billingAddress->setCountry($order['payment_iso_code_2']);
-		$authorization->transactions->card->billingAddress->setZipcode($order['payment_postcode']);
-		$authorization->transactions->card->billingAddress->setComplement( $data['custom_fields'][$this->campo_complemento] );
-		
-		$res = $gateway->charge( $authorization );
-		
-		$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
+		if ( !isset( $json['error'] ) ) {
 
-		if ( isset( $res['status'] ) ) {
-			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::AUTHORIZED === $res['status'] ) {
-				$checkout = true;
-				$this->load->model('checkout/order');
-				$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "Pedido realizado com sucesso.", true);
-				$json['success'] = true;
-				$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
+			require DIR_SYSTEM . 'library/vendor/autoload.php';
+
+			$this->load->model('extension/payment/aditum');
+			
+			$order = $data['order_info'];
+			
+			$amount = number_format($order['total'], 2, '', '');
+
+			AditumPayments\ApiSDK\Configuration::initialize();
+
+			$environment = $this->environment;
+
+			if ( 'sandbox' == $this->environment ) {
+				AditumPayments\ApiSDK\Configuration::setUrl( AditumPayments\ApiSDK\Configuration::DEV_URL );
+			}
+
+			$config = get_object_vars($this);
+
+			AditumPayments\ApiSDK\Configuration::setCnpj( $this->merchant_cnpj );
+			AditumPayments\ApiSDK\Configuration::setMerchantToken( $this->merchant_token );
+			AditumPayments\ApiSDK\Configuration::setlog( false );
+			$login = AditumPayments\ApiSDK\Configuration::login();
+
+			$telephone = preg_replace('/[^\d]+/i', '', $order['telephone']);
+
+			$customer_phone_area_code = substr( $telephone, 0, 2 );
+			$customer_phone           = substr( $telephone, 2 );
+
+			$gateway = new AditumPayments\ApiSDK\Gateway();
+			$authorization  = new AditumPayments\ApiSDK\Domains\Authorization();
+			
+			$items = $this->cart->getProducts();
+			$this->load->model('catalog/product');		
+			foreach($items as $item) {
+				$product_info = $this->model_catalog_product->getProduct($item['product_id']);
+				$authorization->products->add(
+					$item['name'], 
+					$product_info['sku'],
+					str_replace('.', '', number_format($item['price'], 2)),
+					$item['quantity']
+				);
+			}
+
+			$deadline = $this->expiracao;
+
+			$authorization->setSessionId($_REQUEST['antifraud_token']);
+			$authorization->setMerchantChargeId($order['order_id']);
+
+			// ! Customer
+			$authorization->customer->setId( $order['order_id'] );
+			$authorization->customer->setName( $order['payment_firstname'] . ' ' . $order['payment_lastname'] );
+			$authorization->customer->setEmail( $order['email'] );
+
+			$campo_documento = $this->campo_documento;
+
+			$documento = preg_replace( '/[^\d]+/i', '', $data['custom_fields'][$this->campo_documento] );
+			
+			if(strlen( $documento ) <= 11 && $this->validaCPF($documento)) {
+				$json['error'] = 'CPF inválido';
+			}
+
+			if ( strlen( $documento ) > 11 ) 
+			{
+				$authorization->customer->setDocumentType( AditumPayments\ApiSDK\Enum\DocumentType::CNPJ );
+			} 
+			else 
+			{
+				$authorization->customer->setDocumentType( AditumPayments\ApiSDK\Enum\DocumentType::CPF );
+			}
+
+			$authorization->customer->setDocument( $documento );
+
+			// ! Customer->address
+			$authorization->customer->address->setStreet( $order['payment_address_1'] );
+			$authorization->customer->address->setNumber( $data['custom_fields'][$this->campo_numero] );
+			$authorization->customer->address->setNeighborhood( $order['payment_address_2'] );
+			$authorization->customer->address->setCity( $order['payment_city'] );
+			$authorization->customer->address->setState( $order['payment_zone_code'] );
+			$authorization->customer->address->setCountry( $order['payment_iso_code_2'] );
+			$authorization->customer->address->setZipcode( $order['payment_postcode'] );
+			$authorization->customer->address->setComplement( $data['custom_fields'][$this->campo_complemento] );
+
+			// ! Customer->phone
+			$authorization->customer->phone->setCountryCode( '55' );
+			$authorization->customer->phone->setAreaCode( $customer_phone_area_code );
+			$authorization->customer->phone->setNumber( $customer_phone );
+			$authorization->customer->phone->setType( AditumPayments\ApiSDK\Enum\PhoneType::MOBILE );
+
+			// ! Transactions
+			$authorization->transactions->setAmount( $amount );
+			$authorization->transactions->setPaymentType( AditumPayments\ApiSDK\Enum\PaymentType::CREDIT );
+			$authorization->transactions->setInstallmentNumber( isset($_POST['aditum_card_installment']) ? $_POST['aditum_card_installment'] : 1 ); // Só pode ser maior que 1 se o tipo de transação for crédito.
+			
+			if($_POST['aditum_card_installment']>1) {
+				$authorization->transactions->setInstallmentType(AditumPayments\ApiSDK\Enum\InstallmentType::MERCHANT);
 			}
 			else {
-				if($res['charge']->transactions[0]->transactionStatus === "Denied") {
-					$json['error'] = 'Transação negada pela operadora do cartão.';
-					$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), 'Transação negada pela operadora do cartão.', true);
-				} 
-				else if($res['charge']->transactions[0]->transactionStatus === "PreAuthorized"){
+				$authorization->transactions->setInstallmentType(AditumPayments\ApiSDK\Enum\InstallmentType::NONE);
+			}
+
+			$authorization->transactions->card->setCardNumber( preg_replace( '/[^\d]+/', '', $_POST['aditum_card_number'] ) );
+			$authorization->transactions->card->setCVV( $_POST['aditum_card_cvv'] );
+			$authorization->transactions->card->setCardHolderName( $_POST['card_holder_name'] );
+			$authorization->transactions->card->setCardHolderDocument( $_POST['card_holder_document'] );
+			$authorization->transactions->card->setExpirationMonth( $_POST['aditum_card_expiration_month'] );
+			$authorization->transactions->card->setExpirationYear( 20 . $_POST['aditum_card_expiration_year'] );
+			
+			$authorization->transactions->card->billingAddress->setStreet( $order['payment_address_1'] );
+			$authorization->transactions->card->billingAddress->setNumber( $data['custom_fields'][$this->campo_numero] );
+			$authorization->transactions->card->billingAddress->setNeighborhood($order['payment_address_2']);
+			$authorization->transactions->card->billingAddress->setCity($order['payment_city']);
+			$authorization->transactions->card->billingAddress->setState($order['payment_zone_code']);
+			$authorization->transactions->card->billingAddress->setCountry($order['payment_iso_code_2']);
+			$authorization->transactions->card->billingAddress->setZipcode($order['payment_postcode']);
+			$authorization->transactions->card->billingAddress->setComplement( $data['custom_fields'][$this->campo_complemento] );
+			
+			$res = $gateway->charge( $authorization );
+		
+			if ( isset( $res['status'] ) ) {
+				if ( AditumPayments\ApiSDK\Enum\ChargeStatus::NOT_AUTHORIZED === $res['status'] ) {
+					$json['error'] = $this->debug == 'yes' ? json_encode($res) : 'Transação não autorizada.';
+				}
+				else if ( AditumPayments\ApiSDK\Enum\ChargeStatus::AUTHORIZED === $res['status'] ) {
+					$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
+					$checkout = true;
 					$this->load->model('checkout/order');
-					$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "O pagamento está sendo processado.", true);
+					$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "Pedido realizado com sucesso.", true);
 					$json['success'] = true;
 					$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
 				}
+				else {
+					if($res['charge']->transactions[0]->transactionStatus === "Denied") {
+						$json['error'] = $this->debug == 'yes' ? json_encode($res) : 'Transação negada pela operadora do cartão.';
+						$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), 'Transação negada pela operadora do cartão.', true);
+					} 
+					else if($res['charge']->transactions[0]->transactionStatus === "PreAuthorized"){
+						$this->load->model('checkout/order');
+						$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_cc_order_status_id'), "O pagamento está sendo processado.", true);
+						$json['success'] = true;
+						$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
+					}
+				}
+			} else {
+				$message = json_decode($res['httpMsg']);
+				if($message && isset($message->errors) && is_array($message->errors) && count($message->errors)) {
+					$json['error'] = implode("\n", array_map(function($error){ return $error->message; }, $message->errors));
+				}
+				else {
+					$json['error'] = 'Houve uma falha ao finalizar a campo. Tente novamente.';
+				}
 			}
-		} else {
-			$message = json_decode($res['httpMsg']);
-			if($message && isset($message->errors) && is_array($message->errors) && count($message->errors)) {
-				$json['error'] = implode("\n", array_map(function($error){ return $error->message; }, $message->errors));
-			}
-			else {
-				$json['error'] = 'Houve uma falha ao finalizar a campo. Tente novamente.';
+			if(isset($json['error']) && $this->debug == 'yes') {
+				$json['error'] = json_encode($res);
 			}
 		}
 		// $json = get_defined_vars();
@@ -274,7 +325,7 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 
 	public function card_brand() {
 		$this->init_config();
-		require DIR_SYSTEM . '../vendor/autoload.php';
+		require DIR_SYSTEM . 'library/vendor/autoload.php';
 		AditumPayments\ApiSDK\Configuration::initialize();
 		if ( 'sandbox' === $this->environment ) {
 			AditumPayments\ApiSDK\Configuration::setUrl( AditumPayments\ApiSDK\Configuration::DEV_URL );
@@ -304,6 +355,34 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 		}
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(strtolower(json_encode($array_result)));	
+	}
+
+	function validaCPF($cpf = null) {
+
+		// Extrai somente os números
+		$cpf = preg_replace( '/[^0-9]/is', '', $cpf );
+     
+		// Verifica se foi informado todos os digitos corretamente
+		if (strlen($cpf) != 11) {
+			return false;
+		}
+	
+		// Verifica se foi informada uma sequência de digitos repetidos. Ex: 111.111.111-11
+		if (preg_match('/(\d)\1{10}/', $cpf)) {
+			return false;
+		}
+	
+		// Faz o calculo para validar o CPF
+		for ($t = 9; $t < 11; $t++) {
+			for ($d = 0, $c = 0; $c < $t; $c++) {
+				$d += $cpf[$c] * (($t + 1) - $c);
+			}
+			$d = ((10 * $d) % 11) % 10;
+			if ($cpf[$c] != $d) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

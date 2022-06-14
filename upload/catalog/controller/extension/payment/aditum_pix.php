@@ -35,6 +35,7 @@ class ControllerExtensionPaymentAditumPix extends Controller {
 		$this->campo_bairro = $this->config->get('payment_aditum_pix_campo_bairro');
 		$this->tipo_antifraude = $this->config->get('payment_aditum_pix_tipo_antifraude');
 		$this->token_antifraude = $this->config->get('payment_aditum_pix_token_antifraude');
+		$this->debug = $this->config->get('payment_aditum_pix_debug');
 	}
 
 	public function index() {
@@ -87,7 +88,7 @@ class ControllerExtensionPaymentAditumPix extends Controller {
 
 		$this->load->model('extension/payment/aditum');
 
-		$order = $data['order_info'];
+		$order = $data['order_info'];	
 		
 		$amount = number_format($order['total'], 2, '', '');
 
@@ -112,68 +113,83 @@ class ControllerExtensionPaymentAditumPix extends Controller {
 		$customer_phone           = substr( $telephone, 2 );
 
 		$gateway = new AditumPayments\ApiSDK\Gateway();
-		$boleto  = new AditumPayments\ApiSDK\Domains\Pix();
+		$pix  = new AditumPayments\ApiSDK\Domains\Pix();
 
-		$boleto->setMerchantChargeId($order['order_id']);
+        
+		$items = $this->cart->getProducts();
+		$this->load->model('catalog/product');		
+		foreach($items as $item) {
+			$product_info = $this->model_catalog_product->getProduct($item['product_id']);
+			$pix->products->add(
+				$item['name'], 
+				$product_info['sku'],
+				str_replace('.', '', number_format($item['price'], 2)),
+				$item['quantity']
+			);
+		}
+
+		$pix->setMerchantChargeId($order['order_id']);
 
 		// ! Customer
-		$boleto->customer->setId( $order['order_id'] );
-		$boleto->customer->setName( $order['payment_firstname'] . ' ' . $order['payment_lastname'] );
-		$boleto->customer->setEmail( $order['email'] );
+		$pix->customer->setId( $order['order_id'] );
+		$pix->customer->setName( $order['payment_firstname'] . ' ' . $order['payment_lastname'] );
+		$pix->customer->setEmail( $order['email'] );
 
 		$campo_documento = $this->campo_documento;
 
-		$count = strlen( $data['custom_fields'][$this->campo_documento] ) ;
+		$documento = preg_replace( '/[^\d]+/i', '', $data['custom_fields'][$this->campo_documento] );
 
-		if ( strlen( $data['custom_fields'][$this->campo_documento] ) > 11 ) 
+		if ( strlen( $documento ) > 11 ) 
 		{
-			$boleto->customer->setDocumentType( AditumPayments\ApiSDK\Enum\DocumentType::CNPJ );
+			$pix->customer->setDocumentType( AditumPayments\ApiSDK\Enum\DocumentType::CNPJ );
 		} 
 		else 
 		{
-			$boleto->customer->setDocumentType( AditumPayments\ApiSDK\Enum\DocumentType::CPF );
+			$pix->customer->setDocumentType( AditumPayments\ApiSDK\Enum\DocumentType::CPF );
 		}
 
-		$documento = preg_replace( '/[^\d]+/i', '', $data['custom_fields'][$this->campo_documento] );
-		$boleto->customer->setDocument( $documento );
+		$pix->customer->setDocument( $documento );
 
 		// ! Customer->address
-		$boleto->customer->address->setStreet( $order['payment_address_1'] );
-		$boleto->customer->address->setNumber( $data['custom_fields'][$this->campo_numero] );
-		$boleto->customer->address->setNeighborhood( $order['payment_address_2'] );
-		$boleto->customer->address->setCity( $order['payment_city'] );
-		$boleto->customer->address->setState( $order['payment_zone_code'] );
-		$boleto->customer->address->setCountry( $order['payment_iso_code_2'] );
-		$boleto->customer->address->setZipcode( $order['payment_postcode'] );
-		$boleto->customer->address->setComplement( $data['custom_fields'][$this->campo_complemento] );
+		$pix->customer->address->setStreet( $order['payment_address_1'] );
+		$pix->customer->address->setNumber( $data['custom_fields'][$this->campo_numero] );
+		$pix->customer->address->setNeighborhood( $order['payment_address_2'] );
+		$pix->customer->address->setCity( $order['payment_city'] );
+		$pix->customer->address->setState( $order['payment_zone_code'] );
+		$pix->customer->address->setCountry( $order['payment_iso_code_2'] );
+		$pix->customer->address->setZipcode( $order['payment_postcode'] );
+		$pix->customer->address->setComplement( $data['custom_fields'][$this->campo_complemento] );
 
 		// ! Customer->phone
-		$boleto->customer->phone->setCountryCode( '55' );
-		$boleto->customer->phone->setAreaCode( $customer_phone_area_code );
-		$boleto->customer->phone->setNumber( $customer_phone );
-		$boleto->customer->phone->setType( AditumPayments\ApiSDK\Enum\PhoneType::MOBILE );
+		$pix->customer->phone->setCountryCode( '55' );
+		$pix->customer->phone->setAreaCode( $customer_phone_area_code );
+		$pix->customer->phone->setNumber( $customer_phone );
+		$pix->customer->phone->setType( AditumPayments\ApiSDK\Enum\PhoneType::MOBILE );
 
 		// ! Transactions
-		$boleto->transactions->setAmount( $amount );
-		$res = $gateway->charge( $boleto );
+		$pix->transactions->setAmount( $amount );
+		$res = $gateway->charge( $pix );
 
-		$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
-
+		$json = [];
 		if ( isset( $res['status'] ) ) {
-			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::PRE_AUTHORIZED === $res['status'] ) {
-				 $this->load->model('checkout/order');
-				 $checkout = true;
-					if ( 'sandbox' == $this->environment ) {
-						$url = AditumPayments\ApiSDK\Configuration::DEV_URL;
-					}
-					else {
-						$url = AditumPayments\ApiSDK\Configuration::PROD_URL;
-					}
-					 
-					$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_pix_order_status_id'), "Pedido realizado com sucesso", true);
+			if ( AditumPayments\ApiSDK\Enum\ChargeStatus::NOT_AUTHORIZED === $res['status'] ) {
+				$json['error'] = 'Transação não autorizada.';
+			}
+			else if ( AditumPayments\ApiSDK\Enum\ChargeStatus::PRE_AUTHORIZED === $res['status'] ) {
+				$this->model_extension_payment_aditum->save_data($this->session->data['order_id'], json_encode($res));
+				$this->load->model('checkout/order');
+				$checkout = true;
+				if ( 'sandbox' == $this->environment ) {
+					$url = AditumPayments\ApiSDK\Configuration::DEV_URL;
+				}
+				else {
+					$url = AditumPayments\ApiSDK\Configuration::PROD_URL;
+				}
 					
-					$json['success'] = true;
-					$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
+				$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('payment_aditum_pix_order_status_id'), "Pedido realizado com sucesso", true);
+				
+				$json['success'] = true;
+				$json['redirect'] = $this->url->link('checkout/success') . '&order_id=' . $this->session->data['order_id'];
 			}
 		} else {
 			$message = json_decode($res['httpMsg']);
@@ -183,6 +199,9 @@ class ControllerExtensionPaymentAditumPix extends Controller {
 			else {
 				$json['error'] = 'Houve uma falha ao finalizar. Tente novamente.';
 			}
+		}
+		if(isset($json['error']) && $this->debug == 'yes') {
+			$json['error'] = json_encode($res);
 		}
 		// $json = get_defined_vars();
 		$this->response->addHeader('Content-Type: application/json');

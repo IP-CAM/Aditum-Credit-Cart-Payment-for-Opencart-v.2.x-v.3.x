@@ -17,6 +17,11 @@ $boleto->setSessionId("");
 
 $boleto->setDeadline("2");
 
+// Products = Nome, SKU, Valor, Quantidade
+$boleto->products->add("Jackson 2", "32424242", 1001, 1);
+$boleto->products->add("Jackson 3", "32424242", 1002, 2);
+$boleto->products->add("Jackson 4", "32424242", 1003, 3);
+
 // Customer
 $boleto->customer->setId("00002");
 $boleto->customer->setName("fulano");

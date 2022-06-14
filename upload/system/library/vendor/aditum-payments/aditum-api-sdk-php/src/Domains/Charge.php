@@ -4,6 +4,7 @@ namespace AditumPayments\ApiSDK\Domains;
 abstract class Charge {
     public const CHARGE_TYPE = "Undefined";
 
+    public $products = NULL;
     public $customer = NULL;
     public $transactions = NULL;
 

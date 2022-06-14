@@ -2,7 +2,7 @@
 <modification>
   <name>Aditum</name>
   <code>aditum_payment</code>
-  <version>1.0.0</version>
+  <version>1.1.1</version>
   <author>Aditum</author>
   <link>https://aditum.com.br</link>
 
@@ -94,12 +94,20 @@
         <![CDATA[
         if(isset($_GET['order_id'])){
           $this->load->model('extension/payment/aditum');
-          $aditum_data = json_decode($this->model_extension_payment_aditum->get_data($this->session->data['order_id']));
+          $aditum_data = json_decode($this->model_extension_payment_aditum->get_data($_GET['order_id']));
           if(isset($aditum_data->charge->transactions[0]->qrCode)) {
             $data['qrCode'] = $aditum_data->charge->transactions[0]->qrCode;
             $data['qrCodeBase64'] = $aditum_data->charge->transactions[0]->qrCodeBase64;
           }
           if(isset($aditum_data->charge->transactions[0]->bankSlipUrl)) {
+			      require DIR_SYSTEM . 'library/vendor/autoload.php';
+            $environment = $this->config->get('payment_aditum_billet_modo');
+            if ( 'sandbox' == $environment ) {
+              $url = AditumPayments\ApiSDK\Configuration::DEV_URL;
+            }
+            else {
+              $url = AditumPayments\ApiSDK\Configuration::PROD_URL;
+            }
             $urlBoleto = str_replace('/v2/', '', $url) . "{$aditum_data->charge->transactions[0]->bankSlipUrl}";
             $data['url_boleto'] = $urlBoleto;
             $data['linha_digitavel'] = $aditum_data->charge->transactions[0]->digitalLine;

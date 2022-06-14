@@ -21,7 +21,7 @@
 
 ### **PASSO 1**
 
-Baixe os arquivos do repositorio e extraia os arquivos.
+Baixe o arquivo opencart-aditum.ocmod.zip
 
 ### **PASSO 2**
 
