@@ -186,7 +186,7 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 
 			$documento = preg_replace( '/[^\d]+/i', '', $data['custom_fields'][$this->campo_documento] );
 			
-			if(strlen( $documento ) <= 11 && $this->validaCPF($documento)) {
+			if(!$this->validaCPF($documento)) {
 				$json['error'] = 'CPF inválido';
 			}
 
@@ -283,6 +283,9 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 			if(isset($json['error']) && $this->debug == 'yes') {
 				$json['error'] = json_encode($res);
 			}
+		}
+		if(isset($json['error']) && $this->debug == 'yes') {
+			$json['error'] = json_encode($res);
 		}
 		// $json = get_defined_vars();
 		$this->response->addHeader('Content-Type: application/json');
