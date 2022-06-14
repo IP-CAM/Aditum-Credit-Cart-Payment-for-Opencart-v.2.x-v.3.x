@@ -9,12 +9,12 @@
 	</div>
 	<div class="form-group col-md-6">
 		<label class="control-label">CPF</label>
-		<input type="text" class="form-control" value="{{ documento }}" name="card_holder_document">
+		<input type="number" inputmode="numeric" class="form-control" value="{{ documento }}" name="card_holder_document">
 	</div>
 	<div class="form-group col-md-6">
 		<label class="control-label">Número do Cartão</label>
 		<div class="container-bandeira">
-			<input type="text" class="form-control" name="aditum_card_number" value="">
+			<input type="number" inputmode="numeric" class="form-control" name="aditum_card_number" value="">
 		</div>
 	</div>
 	<div class="col-md-6">
@@ -23,16 +23,16 @@
 				<label class="control-label">Data de validade</label>
 			</div>
 			<div class="form-group col-md-6">
-				<input type="text" class="form-control" maxlength="2" placeholder="MÊS" value="" name="aditum_card_expiration_month">
+				<input type="number" inputmode="numeric" class="form-control" maxlength="2" placeholder="MÊS" value="" name="aditum_card_expiration_month">
 			</div>
 			<div class="form-group col-md-6">
-				<input type="text" class="form-control" maxlength="2" placeholder="ANO" value="" name="aditum_card_expiration_year">
+				<input type="number" inputmode="numeric" class="form-control" maxlength="2" placeholder="ANO" value="" name="aditum_card_expiration_year">
 			</div>
 		</div>
 	</div>
 	<div class="form-group col-md-6">
 		<label class="control-label">Número de Verificação do Cartão</label>
-		<input type="text" class="form-control" maxlength="4" name="aditum_card_cvv" value="">
+		<input type="number" inputmode="numeric" class="form-control" maxlength="4" name="aditum_card_cvv" value="">
 	</div>
 	<div class="form-group col-md-6">
 		<label class="control-label">Quantidade de parcelas</label>
