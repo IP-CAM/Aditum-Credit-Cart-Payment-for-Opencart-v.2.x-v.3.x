@@ -162,12 +162,22 @@ class ControllerExtensionPaymentAditumCC extends Controller {
 			
 			$items = $this->cart->getProducts();
 			$this->load->model('catalog/product');		
+			
+			$itemsPrice = 0;
+			foreach($items as $item){
+				$itemsPrice += $item['price'] * $item['quantity'];
+			}
+
 			foreach($items as $item) {
+				$discountPercentage = ($itemsPrice - $order['total']) / ($order['total']);
+				$discountValue = $item['price'] * $discountPercentage;
+				$discountedProductPrice = $item['price'] - $discountValue;
 				$product_info = $this->model_catalog_product->getProduct($item['product_id']);
+				$sku = ($product_info['sku']) ?: $item['product_id'];
 				$authorization->products->add(
 					$item['name'], 
-					$product_info['sku'],
-					str_replace('.', '', number_format($item['price'], 2)),
+					$sku,
+					str_replace('.', '', number_format($discountedProductPrice, 2)),
 					$item['quantity']
 				);
 			}
