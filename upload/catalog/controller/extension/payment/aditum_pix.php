@@ -125,15 +125,18 @@ class ControllerExtensionPaymentAditumPix extends Controller {
 		}
 
 		foreach($items as $item) {
-			$discountPercentage = ($itemsPrice - $order['total']) / ($order['total']);
-			$discountValue = $item['price'] * $discountPercentage;
-			$discountedProductPrice = $item['price'] - $discountValue;
+			$productPrice = $item['price'];
+			if($itemsPrice > $order['total']){
+				$discountPercentage = abs(($itemsPrice - $order['total']) / ($itemsPrice));
+				$discountValue = $item['price'] * $discountPercentage;
+				$productPrice -= $discountValue;
+			}
 			$product_info = $this->model_catalog_product->getProduct($item['product_id']);
 			$sku = ($product_info['sku']) ?: $item['product_id'];
 			$pix->products->add(
 				$item['name'], 
 				$sku,
-				str_replace('.', '', number_format($discountedProductPrice, 2)),
+				str_replace('.', '', number_format($productPrice, 2)),
 				$item['quantity']
 			);
 		}
